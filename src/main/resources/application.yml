@@ -1,0 +1,11 @@
+server:
+  port: 5245
+spring:
+  profiles:
+    active: dev
+  jpa:
+    open-in-view: false
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+  devtools:
+    add-properties: false
+
