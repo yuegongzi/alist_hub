@@ -14,14 +14,14 @@ import lombok.Data;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private  Integer id;
-    private  String name;
+    private Integer id;
+    private String name;
     @JsonIgnore
-    private  String password;
-    private  String base_path;
-    private  Integer role;
-    private  boolean disabled;
-    private  Integer permission;
-    private  String otp_secret;
-    private  String sso_id;
+    private String password;
+    private String base_path;
+    private Integer role;
+    private boolean disabled;
+    private Integer permission;
+    private String otp_secret;
+    private String sso_id;
 }

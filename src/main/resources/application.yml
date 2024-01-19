@@ -1,8 +1,14 @@
 server:
   port: 5245
+  servlet:
+    context-path: /api
 spring:
   profiles:
     active: dev
+  data:
+    web:
+      pageable:
+        one-indexed-parameters: true
   jpa:
     open-in-view: false
     database-platform: org.hibernate.community.dialect.SQLiteDialect

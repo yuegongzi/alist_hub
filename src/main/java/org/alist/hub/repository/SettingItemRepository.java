@@ -3,8 +3,8 @@ package org.alist.hub.repository;
 import org.alist.hub.model.SettingItem;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.stereotype.Repository;
 
-@RepositoryRestResource(collectionResourceRel = "setting_item", path = "setting_item")
-public interface SettingItemRepository extends CrudRepository<SettingItem, Integer>,PagingAndSortingRepository<SettingItem, Integer> {
+@Repository
+public interface SettingItemRepository extends CrudRepository<SettingItem, Integer>, PagingAndSortingRepository<SettingItem, Integer> {
 }

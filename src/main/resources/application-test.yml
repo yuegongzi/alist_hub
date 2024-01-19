@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:/opt/alist/data/data.db
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+logging:
+  level:
+    web: DEBUG

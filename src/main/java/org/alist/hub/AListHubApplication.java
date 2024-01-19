@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AlistHubApplication {
+public class AListHubApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(AlistHubApplication.class, args);
+        SpringApplication.run(AListHubApplication.class, args);
     }
 
 }

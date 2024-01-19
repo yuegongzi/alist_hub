@@ -9,4 +9,4 @@ else
   pkill -f /opt/alist/alist
   echo "Initializing Done"
 fi
-java -Duser.timezone='GMT+08' -jar /app.jar --spring.profiles.active=prod
+java -Duser.timezone='GMT+08' -jar /app.jar --spring.profiles.active=test
