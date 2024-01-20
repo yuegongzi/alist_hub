@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS x_setting_items;
+DROP TABLE IF EXISTS x_meta;
+DROP TABLE IF EXISTS x_storages;

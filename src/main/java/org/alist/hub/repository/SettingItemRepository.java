@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SettingItemRepository extends CrudRepository<SettingItem, Integer>, PagingAndSortingRepository<SettingItem, Integer> {
+    SettingItem findByKey(String key);
 }

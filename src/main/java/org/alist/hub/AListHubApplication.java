@@ -2,6 +2,9 @@ package org.alist.hub;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @SpringBootApplication
 public class AListHubApplication {
@@ -10,4 +13,10 @@ public class AListHubApplication {
         SpringApplication.run(AListHubApplication.class, args);
     }
 
+    @Bean
+    @ConditionalOnMissingBean(WebClient.class)
+    public WebClient webClient() {
+        return WebClient.builder()
+                .build();
+    }
 }

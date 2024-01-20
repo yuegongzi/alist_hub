@@ -15,4 +15,9 @@ public class AListController {
     public boolean start() {
         return AListUtil.start();
     }
+
+    @PostMapping("/stop")
+    public boolean stop() {
+        return AListUtil.stop();
+    }
 }

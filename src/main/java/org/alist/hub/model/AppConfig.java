@@ -1,5 +1,6 @@
 package org.alist.hub.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,17 +10,14 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "x_meta")
-public class Meta {
+@Table(name = "x_app_config")
+public class AppConfig {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String password;
-    private boolean p_sub;
-    private boolean write;
-    private boolean w_sub;
-    private String hide;
-    private boolean h_sub;
-    private String readme;
-    private boolean r_sub;
+    private String label;
+    private String value;
+    private Boolean safe;
+    @Column(name = "`group`")
+    private Integer group;
 }

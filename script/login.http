@@ -1,6 +1,0 @@
-POST http://localhost:5245/api/alist/start
-Content-Type: application/json
-
-{
-}
-
