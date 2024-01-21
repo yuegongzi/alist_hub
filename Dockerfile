@@ -1,10 +1,11 @@
-FROM xiaoyaliu/alist:latest
 FROM azul/zulu-openjdk-alpine:17-jre
+FROM xiaoyaliu/alist:latest
 EXPOSE 5244 5245
-COPY target/*.jar app.jar
-COPY --from=0 /opt/alist /opt/alist
-COPY --from=0 /var/lib/data.zip /var/lib/data.zip
+COPY --from=0 /usr/lib/jvm /usr/lib/jvm
+ENV JAVA_HOME=/usr/lib/jvm/zulu17
+ENV PATH=$PATH:$JAVA_HOME/bin
+COPY target/*.jar /app.jar
+COPY script/entrypoint.sh /start.sh
 VOLUME ["/opt/alist/data"]
 WORKDIR /opt/alist
-COPY script/entrypoint.sh /
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/start.sh"]

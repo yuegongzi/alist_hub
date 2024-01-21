@@ -1,9 +1,7 @@
-POST http://localhost:5245/api/alist/start
+POST http://localhost/api/v1/alist/setting
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "admin"
 }
 
 ###
