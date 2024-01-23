@@ -9,8 +9,6 @@ import java.util.List;
 
 
 @Repository
-public interface AppConfigRepository extends CrudRepository<AppConfig, Integer>, PagingAndSortingRepository<AppConfig, Integer> {
-    AppConfig findByLabelAndGroup(String label, Integer Group);
-
-    List<AppConfig> findAllByGroup(Integer Group);
+public interface AppConfigRepository extends CrudRepository<AppConfig, String>, PagingAndSortingRepository<AppConfig, String> {
+    List<AppConfig> findAllByGroup(Integer group);
 }

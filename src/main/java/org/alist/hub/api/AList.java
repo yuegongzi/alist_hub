@@ -4,10 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
+import org.alist.hub.bean.Response;
 import org.alist.hub.exception.ServiceException;
-import org.alist.hub.utils.JsonUtil;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 @Component
 @AllArgsConstructor
@@ -16,9 +15,8 @@ public class AList {
     private final Http http;
 
     // 判断接口返回结果是否成功
-    private JsonNode isSuccess(Mono<String> response) {
+    private JsonNode isSuccess(JsonNode body) {
         try {
-            JsonNode body = JsonUtil.readTree(response.block());
             // 从JSON数据中获取返回码
             int code = body.findValue("code").asInt();
             // 如果返回码为200
@@ -47,8 +45,8 @@ public class AList {
         Payload payload = Payload.create(Constants.ALIST_BASE_URL + "/auth/login/hash")
                 .addBody("username", username)
                 .addBody("password", password);
-        Mono<String> response = http.post(payload);
-        JsonNode jsonNode = isSuccess(response);
+        Response response = http.post(payload);
+        JsonNode jsonNode = isSuccess(response.asJsonNode());
         return jsonNode.findValue("token").asText();
     }
 }

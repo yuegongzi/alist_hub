@@ -7,8 +7,8 @@ public interface Constants {
     String APP_INIT = "app_init";
     int APP_GROUP = 0;
     int ALIST_GROUP = 1;
+    int FILE_GROUP = 2;
 
-    String my_token = "/data/mytoken.txt";
-    String my_open_token = "/data/myopentoken.txt";
-    String temp_transfer_folder_id = "/data/temp_transfer_folder_id.txt";
+    String FILE_NAME = "alist_hub_temp";
+
 }

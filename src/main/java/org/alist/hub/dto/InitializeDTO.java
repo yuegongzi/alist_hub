@@ -4,11 +4,11 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 @Data
-public class SettingDTO {
+public class InitializeDTO {
     @NotEmpty(message = "请填写refresh_token")
-    private String refresh_token;
+    private String drive_refresh_token;
     @NotEmpty(message = "请填写open_token")
-    private String open_token;
-    @NotEmpty(message = "请填填写文件ID")
-    private String transfer_folder_id;
+    private String open_refresh_token;
+    @NotEmpty(message = "请填写密码")
+    private String password;
 }

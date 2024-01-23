@@ -1,14 +1,14 @@
-POST http://localhost/api/v1/alist/setting
+GET http://localhost/api/v1/open/aliyun/drive/auth/qr
 Content-Type: application/json
 
 {
 }
 
 ###
-POST http://localhost:5245/api/auth/login
+#POST https://openapi.alipan.com/oauth/access_token
+POST https://openapi.alipan.com/adrive/v1.0/user/getDriveInfo
 Content-Type: application/json
+Authorization
 
 {
-  "username": "admin",
-  "password": "admin"
 }

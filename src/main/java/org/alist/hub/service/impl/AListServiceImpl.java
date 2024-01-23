@@ -12,7 +12,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -31,16 +30,12 @@ public class AListServiceImpl implements AListService {
     private AppConfigService appConfigService;
 
     /**
-     * 设置Token。
+     * 设置文件内容
      */
-    private void setToken() {
-        File file = new File("/data");
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-        List<AppConfig> list = appConfigRepository.findAllByGroup(Constants.ALIST_GROUP);
+    private void setFileContent() {
+        List<AppConfig> list = appConfigRepository.findAllByGroup(Constants.FILE_GROUP);
         list.forEach(appConfig -> {
-            Path path = Path.of(appConfig.getLabel());
+            Path path = Path.of(appConfig.getId());
             try {
                 Files.writeString(path, appConfig.getValue(), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
             } catch (IOException e) {
@@ -89,7 +84,7 @@ public class AListServiceImpl implements AListService {
     @Override
     public boolean startAList() {
         try {
-            setToken();
+            setFileContent();
             setConfig();
             ProcessBuilder alist = new ProcessBuilder();
             alist.command("/opt/alist/alist", "server", "--no-prefix");
@@ -103,7 +98,7 @@ public class AListServiceImpl implements AListService {
     @Override
     public void initialize() {
         try {
-            setToken();
+            setFileContent();
             stopNginx();
             ProcessBuilder entrypoint = new ProcessBuilder("/entrypoint.sh");
             CommandUtil.execute(entrypoint);//执行完成会启动nginx

@@ -14,6 +14,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -34,14 +35,21 @@ public class InitialServiceImpl implements InitialService {
         sqlExecutor.executeSQL(sql);
     }
 
+    private void createDir() {
+        File file = new File("/data");
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+    }
 
     @Override
     public boolean execute() {
         try {
             createTable();
+            createDir();
             aListService.startNginx();
             if (appConfigService.isInitialized()) {
-                aListService.startAList();
+//                aListService.startAList();//TODO 恢复
             }
             return true;
         } catch (Exception e) {

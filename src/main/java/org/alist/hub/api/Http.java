@@ -1,6 +1,7 @@
 package org.alist.hub.api;
 
 import lombok.AllArgsConstructor;
+import org.alist.hub.bean.Response;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 
 @Component
 @AllArgsConstructor
@@ -20,41 +22,46 @@ public class Http {
     private final WebClient webClient;
 
     // GET请求
-    public Mono<String> get(Payload payload) {
-        return webClient.get()
+    public Response get(Payload payload) {
+        return Response.of(webClient.get()
                 .uri(payload.getUri())
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
-                .bodyToMono(String.class);
+                .toEntity(String.class)
+                .block(Duration.ofSeconds(30)));
     }
 
     // POST请求
-    public Mono<String> post(Payload payload) {
-        return webClient.post()
+    public Response post(Payload payload) {
+        return Response.of(webClient.post()
                 .uri(payload.getUri())
                 .bodyValue(payload.getBody())
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
-                .bodyToMono(String.class);
+                .toEntity(String.class)
+                .block(Duration.ofSeconds(30))
+        );
     }
 
     // DELETE请求
-    public Mono<Void> delete(Payload payload) {
-        return webClient.delete()
+    public Response delete(Payload payload) {
+        return Response.of(webClient.delete()
                 .uri(payload.getUri())
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
-                .toBodilessEntity().then();
+                .toEntity(String.class)
+                .block(Duration.ofSeconds(30)));
     }
 
     // PUT请求
-    public Mono<String> put(Payload payload) {
-        return webClient.put()
+    public Response put(Payload payload) {
+        return Response.of(webClient.put()
                 .uri(payload.getUri())
                 .bodyValue(payload.getBody())
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
-                .bodyToMono(String.class);
+                .toEntity(String.class)
+                .block(Duration.ofSeconds(30)));
     }
 
     // 下载文件
@@ -66,7 +73,7 @@ public class Http {
         try {
             Path path = Paths.get(targetPath);
             DataBufferUtils.write(dataBuffer, path)
-                    .block();
+                    .block(Duration.ofSeconds(60));
             Files.size(path);
         } catch (IOException e) {
             throw new RuntimeException("Failed to write chunk to file", e);
