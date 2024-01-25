@@ -15,12 +15,12 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String name;
+    private String username;
     @JsonIgnore
     private String password;
     private String base_path;
     private Integer role;
-    private boolean disabled;
+    private Integer disabled;
     private Integer permission;
     private String otp_secret;
     private String sso_id;

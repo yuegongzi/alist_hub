@@ -49,7 +49,7 @@ public class InitialServiceImpl implements InitialService {
             createDir();
             aListService.startNginx();
             if (appConfigService.isInitialized()) {
-//                aListService.startAList();//TODO 恢复
+//                aListService.startAList();
             }
             return true;
         } catch (Exception e) {

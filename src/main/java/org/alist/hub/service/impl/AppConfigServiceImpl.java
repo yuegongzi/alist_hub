@@ -8,6 +8,7 @@ import org.alist.hub.bo.Persistent;
 import org.alist.hub.model.AppConfig;
 import org.alist.hub.repository.AppConfigRepository;
 import org.alist.hub.service.AppConfigService;
+import org.alist.hub.utils.JsonUtil;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -47,10 +48,11 @@ public class AppConfigServiceImpl implements AppConfigService {
         appConfig.setValue(persistent.getValue());
         appConfig.setGroup(Constants.ALIST_GROUP);
         AppConfig file = new AppConfig();
+        String file_path = "/data/" + persistent.getId();
         file.setId("/data/" + persistent.getId());
         file.setValue(persistent.getFileValue());
         file.setGroup(Constants.FILE_GROUP);
-        Path path = Path.of("/data/" + persistent.getId());
+        Path path = Path.of(file_path);
         Files.writeString(path, persistent.getFileValue(), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
         appConfigRepository.save(file);
         appConfigRepository.save(appConfig);
@@ -62,5 +64,14 @@ public class AppConfigServiceImpl implements AppConfigService {
         appConfigRepository.deleteById(persistent.getId());
         appConfigRepository.deleteById("/data/" + persistent.getId());
         Files.delete(Path.of("/data/" + persistent.getId()));
+    }
+
+    @Override
+    public <T> Optional<T> get(Persistent persistent, Class<T> clazz) {
+        Optional<AppConfig> appConfig = appConfigRepository.findById(persistent.getId());
+        if (appConfig.isPresent()) {
+            return JsonUtil.readValue(appConfig.get().getValue(), clazz);
+        }
+        return Optional.empty();
     }
 }

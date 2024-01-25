@@ -75,4 +75,24 @@ public class JsonUtil {
             return Optional.empty();
         }
     }
+
+
+    /**
+     * 根据路径keyPath从JsonNode node中获取JsonNode节点
+     *
+     * @param node    JsonNode节点
+     * @param keyPath 节点路径 形如a.b.c.d形式
+     * @return 返回指定路径的JsonNode节点，如果路径不存在则返回空
+     */
+    public static Optional<JsonNode> getNodeByPath(JsonNode node, String keyPath) {
+        String[] keys = keyPath.split("\\.");
+        for (String key : keys) {
+            node = node.path(key);
+            if (node.isMissingNode()) {
+                return Optional.empty(); // 任意节点为空则返回空
+            }
+        }
+        return Optional.of(node);
+    }
+
 }

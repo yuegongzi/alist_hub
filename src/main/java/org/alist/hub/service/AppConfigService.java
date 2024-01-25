@@ -3,6 +3,7 @@ package org.alist.hub.service;
 import org.alist.hub.bo.Persistent;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public interface AppConfigService {
 
@@ -13,4 +14,6 @@ public interface AppConfigService {
     void saveOrUpdate(Persistent persistent) throws IOException;
 
     void remove(Persistent persistent) throws IOException;
+
+    <T> Optional<T> get(Persistent persistent, Class<T> clazz);
 }

@@ -1,12 +1,14 @@
 package org.alist.hub.bean;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.utils.JsonUtil;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Optional;
 
+@Slf4j
 public class Response {
     private final ResponseEntity<String> responseEntity;
 
@@ -23,14 +25,15 @@ public class Response {
     }
 
     public String getBody() {
+        log.info(this.responseEntity.getBody());//todo 移除
         return this.responseEntity.getBody();
     }
 
     public JsonNode asJsonNode() {
-        return JsonUtil.readTree(this.responseEntity.getBody());
+        return JsonUtil.readTree(this.getBody());
     }
 
     public <T> Optional<T> asValue(Class<T> classValue) {
-        return JsonUtil.readValue(this.responseEntity.getBody(), classValue);
+        return JsonUtil.readValue(this.getBody(), classValue);
     }
 }

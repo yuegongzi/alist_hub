@@ -4,14 +4,14 @@ import lombok.Data;
 import org.alist.hub.utils.JsonUtil;
 
 @Data
-public class AliyunOpenBO implements Persistent {
-    private String refresh_token;
-    private String access_token;
-    private Long expire;
+public class AliYunFolderBo implements Persistent {
+    private String folderId;
+    private String driveId;
+    private String name;
 
     @Override
     public String getId() {
-        return "myopentoken.txt";//用来加载自己的阿里云盘
+        return "temp_transfer_folder_id.txt"; //你的阿里网盘的转存目录的folder id
     }
 
     @Override
@@ -21,6 +21,6 @@ public class AliyunOpenBO implements Persistent {
 
     @Override
     public String getFileValue() {
-        return this.refresh_token;
+        return this.folderId;
     }
 }

@@ -8,7 +8,7 @@ public interface Constants {
     int APP_GROUP = 0;
     int ALIST_GROUP = 1;
     int FILE_GROUP = 2;
-
+    String TV_BOX_TOKEN = "tv_box_token";
     String FILE_NAME = "alist_hub_temp";
 
 }

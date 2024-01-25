@@ -1,12 +1,11 @@
 package org.alist.hub.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.DriveInfo;
 import org.alist.hub.bean.FileInfo;
 import org.alist.hub.bean.Response;
-import org.alist.hub.bo.AliyunOpenBO;
+import org.alist.hub.bo.AliYunOpenBO;
 import org.alist.hub.bo.Persistent;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.AppConfig;
@@ -20,39 +19,33 @@ import java.io.IOException;
 import java.util.Optional;
 
 /**
- * 阿里云盘相关接口
+ * 阿里云盘开放平台相关接口
  */
 @Component
 @AllArgsConstructor
 @Slf4j
-public class AliyunOpen {
+public class AliYunOpenClient {
     private final AppConfigRepository appConfigRepository;
     private final AppConfigService appConfigService;
     private final Http http;
 
 
     // 刷新token
-    private String refreshToken(String refresh_token) throws IOException {
+    private String refreshToken(String refreshToken) throws IOException {
         // 发送HTTP请求获取新的token
         Response response = http.post(Payload.create("https://api.nn.ci/alist/ali_open/code")
                 .addBody("grant_type", "refresh_token")
-                .addBody("refresh_token", refresh_token)
+                .addBody("refresh_token", refreshToken)
         );
-        // 解析返回的JSON数据
-        JsonNode jsonNode = response.asJsonNode();
-        // 如果获取不到access_token，则抛出异常
-        if (jsonNode.get("access_token").asText().isEmpty()) {
+        Optional<AliYunOpenBO> optional = response.asValue(AliYunOpenBO.class);
+        if (optional.isEmpty()) {
             throw new ServiceException("获取token失败");
         }
-        // 创建AliyunOpenBO对象并设置refresh_token、access_token和expire时间
-        AliyunOpenBO aliyunOpenBO = new AliyunOpenBO();
-        aliyunOpenBO.setRefresh_token(jsonNode.get("refresh_token").asText());
-        aliyunOpenBO.setAccess_token(jsonNode.get("access_token").asText());
-        aliyunOpenBO.setExpire(jsonNode.get("expires_in").asLong() * 900 + System.currentTimeMillis());//少存一点时间
+        AliYunOpenBO aliyunOpenBO = optional.get();
+        aliyunOpenBO.setExpiresIn(aliyunOpenBO.getExpiresIn() * 900 + System.currentTimeMillis());//少存一点时间
         // 保存或更新AliyunOpenBO对象到数据库
         appConfigService.saveOrUpdate(aliyunOpenBO);
-        // 返回新的access_token
-        return aliyunOpenBO.getAccess_token();
+        return aliyunOpenBO.getAccessToken();
     }
 
 
@@ -62,25 +55,25 @@ public class AliyunOpen {
      * @return 访问令牌字符串
      */
     private String getAccessToken() {
-        Persistent persistent = new AliyunOpenBO();
+        Persistent persistent = new AliYunOpenBO();
         Optional<AppConfig> appConfig = appConfigRepository.findById(persistent.getId());  // 根据persistent的id获取App配置
         if (appConfig.isEmpty()) {  // 如果App配置为空
             throw new ServiceException("获取token失败");
         }
-        Optional<AliyunOpenBO> aliyunOpenBO = JsonUtil.readValue(appConfig.get().getValue(), AliyunOpenBO.class);
+        Optional<AliYunOpenBO> aliyunOpenBO = JsonUtil.readValue(appConfig.get().getValue(), AliYunOpenBO.class);
         if (aliyunOpenBO.isEmpty()) {  // 如果AliyunOpenBO对象为空
             throw new ServiceException("获取token失败");
         }
-        Long expire = aliyunOpenBO.get().getExpire();
-        if (!StringUtils.hasText(aliyunOpenBO.get().getAccess_token()) || expire == null  // 如果AliyunOpenBO对象的访问令牌为空或者过期时间为空
+        Long expire = aliyunOpenBO.get().getExpiresIn();
+        if (!StringUtils.hasText(aliyunOpenBO.get().getAccessToken()) || expire == null  // 如果AliyunOpenBO对象的访问令牌为空或者过期时间为空
                 || expire >= System.currentTimeMillis()) {  // 或者过期时间大于当前时间
             try {
-                return refreshToken(aliyunOpenBO.get().getRefresh_token());  // 通过刷新令牌获取新的访问令牌
+                return refreshToken(aliyunOpenBO.get().getRefreshToken());  // 通过刷新令牌获取新的访问令牌
             } catch (IOException e) {
                 throw new ServiceException("获取token失败");
             }
         }
-        return aliyunOpenBO.get().getAccess_token();
+        return aliyunOpenBO.get().getAccessToken();
     }
 
 

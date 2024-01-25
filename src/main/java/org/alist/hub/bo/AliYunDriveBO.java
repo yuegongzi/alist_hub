@@ -4,11 +4,15 @@ import lombok.Data;
 import org.alist.hub.utils.JsonUtil;
 
 @Data
-public class AliyunDriveBO implements Persistent {
-    private String refresh_token;
-    private String access_token;
-    private Integer expire_in;
-
+public class AliYunDriveBO implements Persistent {
+    private String refreshToken;
+    private String accessToken;//用于签到
+    private Long expiresIn;
+    //用户信息 回显给前端展示
+    private String nickName;
+    private String avatar;
+    private String userName;
+    private String userId;
     @Override
     public String getId() {
         return "mytoken.txt";//用来加载阿里分享，和自动签到
@@ -21,6 +25,6 @@ public class AliyunDriveBO implements Persistent {
 
     @Override
     public String getFileValue() {
-        return this.refresh_token;
+        return this.refreshToken;
     }
 }

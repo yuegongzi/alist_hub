@@ -18,7 +18,7 @@ public interface AListService {
     /**
      * 初始化
      */
-    void initialize();
+    void initialize(String password);
 
     /**
      * 启动Nginx

@@ -4,13 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.model.AppConfig;
+import org.alist.hub.model.User;
 import org.alist.hub.repository.AppConfigRepository;
+import org.alist.hub.repository.UserRepository;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.utils.CommandUtil;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * AListServiceImpl 是 AListService 的实现类。
@@ -27,7 +31,8 @@ import java.util.List;
 @AllArgsConstructor
 public class AListServiceImpl implements AListService {
     private final AppConfigRepository appConfigRepository;
-    private AppConfigService appConfigService;
+    private final AppConfigService appConfigService;
+    private final UserRepository userRepository;
 
     /**
      * 设置文件内容
@@ -44,16 +49,6 @@ public class AListServiceImpl implements AListService {
         });
     }
 
-    /**
-     * 设置配置。
-     */
-    private void setConfig() throws IOException {
-        Path path = Path.of(Constants.WORK_DIR + "/data/config.json");
-        String content = Files.readString(path, StandardCharsets.UTF_8);
-        String result = content.replace("127.0.0.1", "0.0.0.0");
-        result = result.replace("ALIST_TOKEN_EXPIRE_TIME", "7200");
-        Files.writeString(path, result);
-    }
 
     @Override
     public boolean startNginx() {
@@ -85,7 +80,6 @@ public class AListServiceImpl implements AListService {
     public boolean startAList() {
         try {
             setFileContent();
-            setConfig();
             ProcessBuilder alist = new ProcessBuilder();
             alist.command("/opt/alist/alist", "server", "--no-prefix");
             return CommandUtil.execute(alist);
@@ -96,15 +90,25 @@ public class AListServiceImpl implements AListService {
     }
 
     @Override
-    public void initialize() {
+    public void initialize(String password) {
         try {
             setFileContent();
             stopNginx();
             ProcessBuilder entrypoint = new ProcessBuilder("/entrypoint.sh");
             CommandUtil.execute(entrypoint);//执行完成会启动nginx
             stopNginx();
-            startNginx();//重新给nginx设置值
+            startNginx();// 重新给nginx设置值
             appConfigService.initialize();
+            if (StringUtils.hasText(password)) {
+                // 更新admin用户密码
+                Optional<User> user = userRepository.findByUsername("admin");
+                user.map(u -> {
+                    u.setDisabled(0);
+                    u.setPassword(password);
+                    return userRepository.save(u);
+                });
+
+            }
             this.startAList();
         } catch (Exception e) {
             log.error(e.getMessage(), e);

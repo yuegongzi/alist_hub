@@ -1,14 +1,8 @@
-GET http://localhost/api/v1/open/aliyun/drive/auth/qr
+POST https://api.nn.ci/alist/ali_open/code
 Content-Type: application/json
 
 {
-}
+  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIzZjIxMzQ5MmIyYmE0MTI2ODk4MTc0MGUwNTM2OTE2NCIsImF1ZCI6Ijc2OTE3Y2NjY2Q0NDQxYzM5NDU3YTA0ZjYwODRmYjJmIiwiZXhwIjoxNzEzNTMzODYzLCJpYXQiOjE3MDU3NTc4NjMsImp0aSI6ImI0NzY5NjY4Y2E3NDQyNmRhYzkyYTVlNTc5ZjM0ZTk5In0.LdmGcHLhQA2Rh9efKrCX8TtS0jEJf-8-wrAn6-CyVXucZmkSLDKHiPPA3Jvz83-7est8Q1tOICBt8D0XYFBEag",
+  "grant_type": "refresh_token"
 
-###
-#POST https://openapi.alipan.com/oauth/access_token
-POST https://openapi.alipan.com/adrive/v1.0/user/getDriveInfo
-Content-Type: application/json
-Authorization
-
-{
 }
