@@ -16,9 +16,12 @@ import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.StorageService;
 import org.alist.hub.utils.StringUtils;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -83,18 +86,27 @@ public class StorageServiceImpl implements StorageService {
         setAliAddition(list.toArray(new Storage[0]));
     }
 
+
     @Transactional
     @Override
     public void removeAll() {
         storageRepository.deleteByIdLessThan(10000L);//删除旧的存储
         metaRepository.deleteByIdGreaterThan(4);//删除旧元数据
-        metaRepository.updateHideLessThan(5, "1");
-        Optional<Meta> optional = metaRepository.findById(4);
-        optional.map(meta -> {
-            meta.setReadme(Constants.CONTENT);
-            metaRepository.save(meta);
-            return null;
-        });
+        metaRepository.updateHideLessThan(4, "1");
+        ClassPathResource classPathResource = new ClassPathResource("db/migration/readme.txt");
+        try {
+            byte[] bytes = FileCopyUtils.copyToByteArray(classPathResource.getInputStream());
+            String content = new String(bytes, StandardCharsets.UTF_8);
+            Optional<Meta> optional = metaRepository.findById(4);
+            optional.map(meta -> {
+                meta.setReadme(content);
+                metaRepository.save(meta);
+                return null;
+            });
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+
     }
 
     @Override

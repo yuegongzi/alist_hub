@@ -10,8 +10,4 @@ public interface Constants {
     String API_DOMAIN = "https://api.xhofe.top";
     String TV_BOX_TOKEN = "tv_box_token";
     String FILE_NAME = "alist_hub_temp";
-    String CONTENT = "<FORM METHOD=GET ACTION=/search >             \n" +
-            "<input type=\"text\" name=\"box\" placeholder=\" 输入搜索关键词\"  >         \n" +
-            "<input type=\"hidden\" name=\"url\"> \n" +
-            "</FORM>\n";
 }
