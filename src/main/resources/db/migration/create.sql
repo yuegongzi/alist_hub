@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `x_search_node`
 -- ----------------------------
 -- Indexes structure for table x_search_nodes
 -- ----------------------------
-CREATE INDEX IF NOT EXISTS "main"."idx_x_search_nodes_parent"
+CREATE INDEX IF NOT EXISTS "main"."idx_x_search_node_parent"
     ON "x_search_node" (
                         "parent" ASC
         );
