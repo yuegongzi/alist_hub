@@ -2,13 +2,9 @@ package org.alist.hub.controller;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.AliYunDriveBO;
-import org.alist.hub.bo.GuestBO;
-import org.alist.hub.bo.Persistent;
 import org.alist.hub.bo.PikPakBo;
-import org.alist.hub.bo.ShowAliBO;
 import org.alist.hub.dto.AccountDTO;
 import org.alist.hub.dto.SecurityDTO;
 import org.alist.hub.exception.ServiceException;
@@ -19,6 +15,7 @@ import org.alist.hub.repository.UserRepository;
 import org.alist.hub.service.AliYunDriveService;
 import org.alist.hub.service.AliYunOpenService;
 import org.alist.hub.service.AppConfigService;
+import org.alist.hub.service.StorageService;
 import org.alist.hub.utils.RandomUtil;
 import org.alist.hub.vo.AccountVO;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +35,7 @@ import java.util.Optional;
 public class SettingController {
     private final UserRepository userRepository;
     private final AppConfigService appConfigService;
+    private final StorageService storageService;
     private final AppConfigRepository appConfigRepository;
     private final AliYunDriveService aliYunDriveService;
     private final AliYunOpenService aliYunOpenService;
@@ -48,20 +45,18 @@ public class SettingController {
         List<SecurityDTO> securityDTOList = new ArrayList<>();
         Optional<User> optional = userRepository.findByUsername("guest");
         if (optional.isPresent()) {
-            securityDTOList.add(new SecurityDTO(optional.get().getDisabled() != 0, "guest"));
+            User user = optional.get();
+            boolean value = user.getDisabled() == null || user.getDisabled() == 0;
+            securityDTOList.add(new SecurityDTO(value, "guest"));
         } else {
             securityDTOList.add(new SecurityDTO(false, "guest"));
         }
-        Persistent guestBO = new GuestBO();
-        securityDTOList.add(new SecurityDTO(appConfigRepository.findById(guestBO.getId()).isPresent(), "auth"));
-        Persistent showAliBO = new ShowAliBO();
-        securityDTOList.add(new SecurityDTO(appConfigRepository.findById(showAliBO.getId()).isPresent(), "ali"));
+        securityDTOList.add(new SecurityDTO(!storageService.getMyAli(), "ali"));
         securityDTOList.add(new SecurityDTO(appConfigRepository.findById(Constants.TV_BOX_TOKEN).isPresent(), "tvbox"));
         return securityDTOList;
     }
 
     @PutMapping("/security")
-    @SneakyThrows
     public void security(@RequestBody @Valid SecurityDTO securityDTO) {
         switch (securityDTO.getLabel()) {
             case "guest":
@@ -71,21 +66,8 @@ public class SettingController {
                     return userRepository.save(user);
                 });
                 break;
-            case "auth":
-                Persistent guestBO = new GuestBO();
-                if (securityDTO.getValue()) {
-                    appConfigService.saveOrUpdate(guestBO);
-                } else {
-                    appConfigService.remove(guestBO);
-                }
-                break;
             case "ali":
-                Persistent aliBO = new ShowAliBO();
-                if (securityDTO.getValue()) {
-                    appConfigService.saveOrUpdate(aliBO);
-                } else {
-                    appConfigService.remove(aliBO);
-                }
+                storageService.updateMyAli(!securityDTO.getValue());
                 break;
             case "tvbox":
                 AppConfig appConfig = new AppConfig();
@@ -104,17 +86,19 @@ public class SettingController {
     }
 
     @PutMapping("/account")
-    public void account(@RequestBody @Valid AccountDTO accountDTO) throws IOException {
+    public void account(@RequestBody @Valid AccountDTO accountDTO) {
         switch (accountDTO.getType()) {
             case "drive":
                 String status = aliYunDriveService.authorize(accountDTO.getParams());
                 if (!"CONFIRMED".equals(status)) {
                     throw new ServiceException("校验失败");
                 }
+                storageService.updateAliYunDrive();
                 break;
             case "openapi":
                 if (accountDTO.getParams().containsKey("url")) {
                     aliYunOpenService.authorize(accountDTO.getParams().get("url").toString());
+                    storageService.updateAliYunDrive();
                 } else {
                     throw new IllegalArgumentException("参数url未填写");
                 }
@@ -126,6 +110,7 @@ public class SettingController {
                     pikPakBo.setPassword(params.get("password").toString());
                     pikPakBo.setUsername(params.get("username").toString());
                     appConfigService.saveOrUpdate(pikPakBo);
+                    storageService.updatePikPak();
                 }
                 break;
             default:

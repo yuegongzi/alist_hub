@@ -4,6 +4,8 @@ package org.alist.hub.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.UserClaims;
+import org.alist.hub.configure.HubProperties;
+import org.alist.hub.provider.ApplicationContextProvider;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -21,6 +23,7 @@ import java.util.Optional;
 public class JwtUtil {
     private static String JWT_SECRET = null;
 
+
     /**
      * 获取密钥
      *
@@ -29,7 +32,8 @@ public class JwtUtil {
      */
     public static String getSecretKey() throws IOException {
         if (JWT_SECRET == null) {
-            String config = Files.readString(Path.of("/opt/alist/data/config.json"));
+            HubProperties hubProperties = ApplicationContextProvider.getHubProperties();
+            String config = Files.readString(Path.of(hubProperties.getPath() + "/config.json"));
             JsonNode jsonNode = JsonUtil.readTree(config);
             JWT_SECRET = jsonNode.findValue("jwt_secret").asText();
         }

@@ -3,14 +3,16 @@ package org.alist.hub.bo;
 import lombok.Data;
 import org.alist.hub.utils.JsonUtil;
 
+import java.util.Date;
+
 @Data
-public class PikPakBo implements Persistent {
-    private String username;
-    private String password;
+public class XiaoYaBo implements Persistent {
+    private String version;
+    private Date updateTime;
 
     @Override
     public String getId() {
-        return "pikpak";
+        return "xiaoya";
     }
 
     @Override

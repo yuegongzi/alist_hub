@@ -18,21 +18,19 @@ public class Page<T> {
      * 响应消息
      */
     private String message;
-    /**
-     * 分页信息
-     */
-    private Pagination pagination;
 
-    /**
-     * 构造方法
-     *
-     * @param data       数据列表
-     * @param pagination 分页信息
-     */
-    public Page(List<T> data, Pagination pagination) {
+    private long current;
+    private long pageSize;
+    private long total;
+    private boolean success;
+
+    public Page(List<T> data, long current, long pageSize, long total) {
         this.data = data;
-        this.pagination = pagination;
+        this.current = current;
+        this.pageSize = pageSize;
+        this.total = total;
         this.code = ResultCode.SUCCESS.getCode();
+        this.success = true;
         this.message = ResultCode.SUCCESS.getMessage();
     }
 
@@ -44,5 +42,6 @@ public class Page<T> {
     public Page(String message) {
         this.message = message;
         this.code = ResultCode.FAILURE.getCode();
+        this.success = false;
     }
 }

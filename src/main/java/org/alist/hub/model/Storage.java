@@ -1,16 +1,18 @@
 package org.alist.hub.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @Data
 @Entity
@@ -19,38 +21,72 @@ import java.time.LocalDateTime;
 public class Storage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @Column(name = "id")
+    private Long id;
 
-    private String mount_path;
+    @NotEmpty(message = "请填写挂载路径")
+    @Column(name = "mount_path")
+    private String mountPath;
 
-    @Column(name = "`order`")
+    @Column(name = "`order`") // 如果数据库中确实存在带反引号的字段名，则保留
     private Integer order;
 
+    @NotEmpty(message = "请填写驱动")
+    @Column(name = "driver")
     private String driver;
 
-    private Integer cache_expiration;
+    @Column(name = "cache_expiration")
+    private Integer cacheExpiration;
 
+    @Column(name = "status")
     private String status;
 
-    private String addition;
+    @Convert(converter = JsonConverter.class)
+    @NotNull(message = "请填写附加信息")
+    @Column(name = "addition")
+    private Map<String, Object> addition;
 
+    @Column(name = "remark")
     private String remark;
 
-    @CreationTimestamp
-    private LocalDateTime modified;
+    @Column(name = "modified")
+    private String modified;
 
+    @Column(name = "disabled")
     private boolean disabled;
 
-    private String order_by;
+    @Column(name = "order_by")
+    private String orderBy;
 
-    private String order_direction;
+    @Column(name = "order_direction")
+    private String orderDirection;
 
-    private String extract_folder;
+    @Column(name = "extract_folder")
+    private String extractFolder;
 
-    private boolean web_proxy;
+    @Column(name = "web_proxy")
+    private boolean webProxy;
 
-    private String webdav_policy;
+    @Column(name = "webdav_policy")
+    private String webdavPolicy;
 
-    private String down_proxy_url;
+    @Column(name = "down_proxy_url")
+    private String downProxyUrl;
+
+    public void build() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSSX");
+        String formattedDate = formatter.format(ZonedDateTime.now());
+        this.setOrder(0);
+        this.setStatus("work");
+        this.setExtractFolder("front");
+        this.setOrderBy("name");
+        this.setOrderDirection("asc");
+        this.setCacheExpiration(30);
+        this.setRemark("");
+        this.setWebProxy(false);
+        this.setDownProxyUrl("");
+        this.setModified(formattedDate);
+        this.setWebdavPolicy("302_redirect");
+    }
+
 }

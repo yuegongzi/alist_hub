@@ -21,12 +21,4 @@ public interface Persistent {
      */
     @JsonIgnore
     String getValue();
-
-    /**
-     * 获取存入文件的值
-     *
-     * @return String
-     */
-    @JsonIgnore
-    String getFileValue();
 }

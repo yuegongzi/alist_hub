@@ -1,13 +1,18 @@
 package org.alist.hub.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.alist.hub.api.AliYunDriveClient;
 import org.alist.hub.bean.UserClaims;
+import org.alist.hub.bo.AliYunSignBO;
 import org.alist.hub.dto.PasswordDTO;
 import org.alist.hub.model.User;
 import org.alist.hub.repository.UserRepository;
+import org.alist.hub.service.AppConfigService;
 import org.alist.hub.utils.RequestContextUtil;
 import org.alist.hub.utils.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +25,8 @@ import java.util.Optional;
 @AllArgsConstructor
 public class UserController {
     private final UserRepository userRepository;
+    private final AliYunDriveClient aliYunDriveClient;
+    private final AppConfigService appConfigService;
 
     @PutMapping("/password")
     public void update(@RequestBody @Valid PasswordDTO passwordDTO) {
@@ -37,5 +44,21 @@ public class UserController {
         User u = user.get();
         u.setPassword(passwordDTO.getNewPassword());
         userRepository.save(u);
+    }
+
+    /**
+     * 获取用户签到列表
+     */
+    @GetMapping("/sign")
+    public JsonNode sign() {
+        AliYunSignBO aliYunSignBO = new AliYunSignBO();
+        Optional<AliYunSignBO> optional = appConfigService.get(aliYunSignBO, AliYunSignBO.class);
+        if (optional.isEmpty()) {
+            JsonNode jsonNode = aliYunDriveClient.sign();
+            aliYunSignBO.setResult(jsonNode);
+            appConfigService.saveOrUpdate(aliYunSignBO);
+            return jsonNode;
+        }
+        return optional.get().getResult();
     }
 }

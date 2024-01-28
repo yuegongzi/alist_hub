@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.alist.hub.api.Http;
 import org.alist.hub.api.Payload;
 import org.alist.hub.bean.AliYunDriveResp;
+import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.Response;
 import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.exception.ServiceException;
@@ -13,7 +14,6 @@ import org.alist.hub.service.AppConfigService;
 import org.alist.hub.utils.JsonUtil;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
@@ -28,7 +28,7 @@ public class AliYunDriveServiceImpl implements AliYunDriveService {
     @Override
     public String authorize(Map<String, Object> params) {
         // 创建请求的负载
-        Payload payload = Payload.create("https://api.nn.ci/alist/ali/ck");
+        Payload payload = Payload.create(Constants.API_DOMAIN + "/alist/ali/ck");
         payload.setBody(params);
         payload.addHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
@@ -63,11 +63,7 @@ public class AliYunDriveServiceImpl implements AliYunDriveService {
         aliYunDriveBO.setExpiresIn(System.currentTimeMillis() + (aliYunDriveBO.getExpiresIn() - 300) * 1000);
 
         // 保存或更新aliYunDriveBO对象，抛出异常如果保存失败
-        try {
-            appConfigService.saveOrUpdate(aliYunDriveBO);
-        } catch (IOException e) {
-            throw new ServiceException("保存数据失败");
-        }
+        appConfigService.saveOrUpdate(aliYunDriveBO);
         return "CONFIRMED";
     }
 

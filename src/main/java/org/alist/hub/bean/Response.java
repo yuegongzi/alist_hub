@@ -25,7 +25,6 @@ public class Response {
     }
 
     public String getBody() {
-        log.info(this.responseEntity.getBody());//todo 移除
         return this.responseEntity.getBody();
     }
 

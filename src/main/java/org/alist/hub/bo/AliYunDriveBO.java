@@ -15,7 +15,7 @@ public class AliYunDriveBO implements Persistent {
     private String userId;
     @Override
     public String getId() {
-        return "mytoken.txt";//用来加载阿里分享，和自动签到
+        return "mytoken";//用来加载阿里分享，和自动签到
     }
 
     @Override
@@ -23,8 +23,4 @@ public class AliYunDriveBO implements Persistent {
         return JsonUtil.toJson(this);
     }
 
-    @Override
-    public String getFileValue() {
-        return this.refreshToken;
-    }
 }

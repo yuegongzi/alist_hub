@@ -2,6 +2,7 @@ package org.alist.hub.api;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.DriveInfo;
 import org.alist.hub.bean.FileInfo;
 import org.alist.hub.bean.Response;
@@ -15,7 +16,6 @@ import org.alist.hub.utils.JsonUtil;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -31,9 +31,9 @@ public class AliYunOpenClient {
 
 
     // 刷新token
-    private String refreshToken(String refreshToken) throws IOException {
+    private String refreshToken(String refreshToken) {
         // 发送HTTP请求获取新的token
-        Response response = http.post(Payload.create("https://api.nn.ci/alist/ali_open/code")
+        Response response = http.post(Payload.create(Constants.API_DOMAIN + "/alist/ali_open/code")
                 .addBody("grant_type", "refresh_token")
                 .addBody("refresh_token", refreshToken)
         );
@@ -66,12 +66,8 @@ public class AliYunOpenClient {
         }
         Long expire = aliyunOpenBO.get().getExpiresIn();
         if (!StringUtils.hasText(aliyunOpenBO.get().getAccessToken()) || expire == null  // 如果AliyunOpenBO对象的访问令牌为空或者过期时间为空
-                || expire >= System.currentTimeMillis()) {  // 或者过期时间大于当前时间
-            try {
-                return refreshToken(aliyunOpenBO.get().getRefreshToken());  // 通过刷新令牌获取新的访问令牌
-            } catch (IOException e) {
-                throw new ServiceException("获取token失败");
-            }
+                || expire <= System.currentTimeMillis()) {  // 或者过期时间大于当前时间
+            return refreshToken(aliyunOpenBO.get().getRefreshToken());  // 通过刷新令牌获取新的访问令牌
         }
         return aliyunOpenBO.get().getAccessToken();
     }
@@ -104,11 +100,12 @@ public class AliYunOpenClient {
                     .addBody("type", type)
                     .addBody("parent_file_id",
                             StringUtils.hasText(parent_file_id) ? parent_file_id : "root")
-                    .addBody("drive_id", driveInfo.get().getResource_drive_id())
+                    .addBody("drive_id", driveInfo.get().getResourceDriveId())
                     .addBody("name", name));
             return response.asValue(FileInfo.class);
         }
         return Optional.empty();
     }
+
 
 }

@@ -11,7 +11,7 @@ public class ZipUtil {
             Files.createDirectories(destDirectory);
         }
         // 构建解压命令
-        ProcessBuilder pb = new ProcessBuilder("unzip", "-d", destDirectory.toString(), zipFilePath.toString());
+        ProcessBuilder pb = new ProcessBuilder("unzip", "-o", "-d", destDirectory.toString(), zipFilePath.toString());
         // 设置错误流和输出流重定向到当前进程的标准输出和标准错误（便于查看运行结果）
         pb.redirectErrorStream(true);
         // 启动子进程执行解压命令

@@ -1,5 +1,6 @@
 package org.alist.hub.bean;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
@@ -8,16 +9,27 @@ import lombok.Data;
 @Data
 public class DriveInfo {
     // 用户ID
-    private String user_id;
+    @JsonProperty("user_id")
+    private String userId;
+
     // 姓名
-    private String user_name;
+    @JsonProperty("user_name")
+    private String userName;
+
     // 头像
+    @JsonProperty("avatar")
     private String avatar;
+
     // 默认驱动器ID
-    private String default_drive_id;
+    @JsonProperty("default_drive_id")
+    private String defaultDriveId;
+
     // 资源驱动器ID
-    private String resource_drive_id;
+    @JsonProperty("resource_drive_id")
+    private String resourceDriveId;
+
     // 备份驱动器ID
-    private String backup_drive_id;
+    @JsonProperty("backup_drive_id")
+    private String backupDriveId;
 
 }

@@ -4,14 +4,14 @@ import lombok.Data;
 import org.alist.hub.utils.JsonUtil;
 
 @Data
-public class AliYunFolderBo implements Persistent {
+public class AliYunFolderBO implements Persistent {
     private String folderId;
     private String driveId;
     private String name;
 
     @Override
     public String getId() {
-        return "temp_transfer_folder_id.txt"; //你的阿里网盘的转存目录的folder id
+        return "temp_transfer_folder_id"; //你的阿里网盘的转存目录的folder id
     }
 
     @Override
@@ -19,8 +19,4 @@ public class AliYunFolderBo implements Persistent {
         return JsonUtil.toJson(this);
     }
 
-    @Override
-    public String getFileValue() {
-        return this.folderId;
-    }
 }

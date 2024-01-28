@@ -34,5 +34,10 @@ public interface AListService {
      */
     boolean stopNginx();
 
-
+    /**
+     * 更新小雅
+     *
+     * @return boolean
+     */
+    boolean update();
 }

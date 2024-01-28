@@ -4,3 +4,7 @@ spring:
     driver-class-name: org.sqlite.JDBC
   jpa:
     show-sql: false
+
+alist:
+  hub:
+    path: /opt/alist/data

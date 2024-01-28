@@ -9,3 +9,7 @@ spring:
 logging:
   level:
     web: DEBUG
+
+alist:
+  hub:
+    path: /opt/alist/data

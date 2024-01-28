@@ -201,8 +201,7 @@ public class R<T> implements Serializable {
      * @return 分页结果对象
      */
     public static <T> Page<T> page(org.springframework.data.domain.Page<T> page) {
-        Pagination pagination = new Pagination(page.getNumber(), page.getSize(), page.getTotalElements());
-        return new Page<>(page.getContent(), pagination);
+        return new Page<>(page.getContent(), page.getNumber() + 1, page.getSize(), page.getTotalElements());
     }
 
 }

@@ -1,16 +1,16 @@
 package org.alist.hub.bo;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 import org.alist.hub.utils.JsonUtil;
 
 @Data
-public class PikPakBo implements Persistent {
-    private String username;
-    private String password;
+public class AliYunSignBO implements Persistent {
+    private JsonNode result;
 
     @Override
     public String getId() {
-        return "pikpak";
+        return "aliyun_drive_sign";
     }
 
     @Override

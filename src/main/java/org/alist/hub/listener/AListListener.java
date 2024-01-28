@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 public class AListListener implements ApplicationListener<ApplicationReadyEvent> {
     private final InitialService initialService;
 
-
     /**
      * 在应用启动事件中，当应用准备就绪时执行。
      *
@@ -19,7 +18,11 @@ public class AListListener implements ApplicationListener<ApplicationReadyEvent>
      */
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        initialService.execute();
+        String env = event.getApplicationContext().getEnvironment().getActiveProfiles()[0];
+        if (!"dev".equals(env)) {
+            initialService.execute();
+        }
+
     }
 
 }

@@ -17,7 +17,7 @@ public class AliYunOpenBO implements Persistent {
 
     @Override
     public String getId() {
-        return "myopentoken.txt";//用来加载自己的阿里云盘
+        return "myopentoken";//用来加载自己的阿里云盘
     }
 
     @Override
@@ -25,8 +25,4 @@ public class AliYunOpenBO implements Persistent {
         return JsonUtil.toJson(this);
     }
 
-    @Override
-    public String getFileValue() {
-        return this.refreshToken;
-    }
 }

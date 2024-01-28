@@ -1,8 +1,17 @@
-POST https://api.nn.ci/alist/ali_open/code
+###
+
+POST http://localhost/api/v1/open/initialize
 Content-Type: application/json
 
 {
-  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIzZjIxMzQ5MmIyYmE0MTI2ODk4MTc0MGUwNTM2OTE2NCIsImF1ZCI6Ijc2OTE3Y2NjY2Q0NDQxYzM5NDU3YTA0ZjYwODRmYjJmIiwiZXhwIjoxNzEzNTMzODYzLCJpYXQiOjE3MDU3NTc4NjMsImp0aSI6ImI0NzY5NjY4Y2E3NDQyNmRhYzkyYTVlNTc5ZjM0ZTk5In0.LdmGcHLhQA2Rh9efKrCX8TtS0jEJf-8-wrAn6-CyVXucZmkSLDKHiPPA3Jvz83-7est8Q1tOICBt8D0XYFBEag",
-  "grant_type": "refresh_token"
-
+  "password": "888888"
 }
+
+
+###
+
+POST http://localhost:5245/api/v1/search_node/build
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzA2NjA3MTY0LCJuYmYiOjE3MDY0MzQzNjQsImlhdCI6MTcwNjQzNDM2NH0.4vlyUizUcXYCcYKf21Qxr8qq-n4JbWawm35KNlEDBHs
+
+{}

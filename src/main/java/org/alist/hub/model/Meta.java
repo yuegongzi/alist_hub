@@ -1,5 +1,6 @@
 package org.alist.hub.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,11 +16,15 @@ public class Meta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String password;
-    private boolean p_sub;
+    @Column(name = "p_sub")
+    private boolean pSub;
     private boolean write;
-    private boolean w_sub;
+    @Column(name = "w_sub")
+    private boolean wSub;
     private String hide;
-    private boolean h_sub;
+    @Column(name = "h_sub")
+    private boolean hSub;
     private String readme;
-    private boolean r_sub;
+    @Column(name = "r_sub")
+    private boolean rSub;
 }

@@ -2,6 +2,7 @@ package org.alist.hub.utils;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -11,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 
@@ -76,6 +80,16 @@ public class JsonUtil {
         }
     }
 
+    public static Map<String, Object> toMap(String json) {
+        try {
+            return jsonMapper.readValue(json, new TypeReference<>() {
+            });
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage(), e);
+            return new HashMap<>();
+        }
+    }
+
 
     /**
      * 根据路径keyPath从JsonNode node中获取JsonNode节点
@@ -95,4 +109,37 @@ public class JsonUtil {
         return Optional.of(node);
     }
 
+    /**
+     * 将JSON字符串转换为指定类型的List对象
+     *
+     * @param json  JSON格式的字符串
+     * @param clazz 需要转换的目标元素类型
+     * @param <T>   泛型，表示列表中元素的类型
+     * @return 转换后的List<T>对象，如果转换失败则返回空Optional
+     */
+    public static <T> Optional<List<T>> readTreeValue(String json, Class<T> clazz) {
+        try {
+            return Optional.of(jsonMapper.readValue(json, jsonMapper.getTypeFactory().constructCollectionType(List.class, clazz)));
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * 将JsonNode转换为指定类型的实例对象
+     *
+     * @param node  JsonNode对象
+     * @param clazz 目标对象的Class类型
+     * @param <T>   目标对象的类型
+     * @return 目标对象的Optional实例，如果转换失败则返回空Optional
+     */
+    public static <T> Optional<T> jsonNodeToObject(JsonNode node, Class<T> clazz) {
+        try {
+            return Optional.of(jsonMapper.treeToValue(node, clazz));
+        } catch (JsonProcessingException e) {
+            log.error("Failed to convert JsonNode to object of type '{}': {}", clazz.getName(), e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
 }

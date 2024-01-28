@@ -7,13 +7,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.api.Http;
 import org.alist.hub.api.Payload;
+import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.Response;
 import org.alist.hub.dto.InitializeDTO;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AliYunDriveService;
 import org.alist.hub.service.AliYunOpenService;
-import org.alist.hub.service.AppConfigService;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +32,6 @@ import java.util.Map;
 @Slf4j
 public class OpenController {
     private final Http http;
-    private final AppConfigService appConfigService;
     private final AListService aListService;
     private final AliYunDriveService aliYunDriveService;
     private final AliYunOpenService aliYunOpenService;
@@ -45,7 +44,7 @@ public class OpenController {
      */
     @GetMapping("/aliyun/drive/qr")
     public JsonNode drive_qr() {
-        Response response = http.get(Payload.create("https://api.nn.ci/alist/ali/qr"));
+        Response response = http.get(Payload.create(Constants.API_DOMAIN + "/alist/ali/qr"));
         JsonNode jsonNode = response.asJsonNode();
         if (jsonNode.findValue("hasError").asBoolean()) {
             throw new ServiceException("获取授权二维码失败");
@@ -72,7 +71,7 @@ public class OpenController {
      */
     @GetMapping("/aliyun/openapi/qr")
     public String openapi_qr() {
-        Response response = http.post(Payload.create("https://api.nn.ci/alist/ali_open/qr"));
+        Response response = http.post(Payload.create(Constants.API_DOMAIN + "/alist/ali_open/qr"));
         JsonNode jsonNode = response.asJsonNode();
         String qr = jsonNode.findValue("qrCodeUrl").asText("");
         if (StringUtils.hasText(qr)) {
@@ -101,17 +100,6 @@ public class OpenController {
     @PostMapping("/initialize")
     @SneakyThrows
     public void initialize(@RequestBody @Valid InitializeDTO initializeDTO) {
-        // 检查是否已经初始化
-        if (!appConfigService.isInitialized()) {
-            // 新建线程执行初始化操作
-            new Thread(() -> {
-                try {
-                    Thread.sleep(1000);  // 休眠1秒
-                    aListService.initialize(initializeDTO.getPassword());
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);  // 记录异常信息
-                }
-            }).start();  // 启动线程
-        }
+        aListService.initialize(initializeDTO.getPassword());
     }
 }

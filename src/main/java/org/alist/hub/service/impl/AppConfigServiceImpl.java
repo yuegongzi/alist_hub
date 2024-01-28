@@ -11,11 +11,6 @@ import org.alist.hub.service.AppConfigService;
 import org.alist.hub.utils.JsonUtil;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
 @Service
@@ -28,7 +23,7 @@ public class AppConfigServiceImpl implements AppConfigService {
     @Override
     public boolean isInitialized() {
         Optional<AppConfig> appConfig = appConfigRepository.findById(Constants.APP_INIT);
-        return appConfig.isPresent();
+        return appConfig.map(a -> a.getValue().equals("true")).orElse(false);
     }
 
     @Override
@@ -42,28 +37,18 @@ public class AppConfigServiceImpl implements AppConfigService {
 
     @Override
     @Transactional(rollbackOn = Exception.class)
-    public void saveOrUpdate(Persistent persistent) throws IOException {
+    public void saveOrUpdate(Persistent persistent) {
         AppConfig appConfig = new AppConfig();
         appConfig.setId(persistent.getId());
         appConfig.setValue(persistent.getValue());
         appConfig.setGroup(Constants.ALIST_GROUP);
-        AppConfig file = new AppConfig();
-        String file_path = "/data/" + persistent.getId();
-        file.setId("/data/" + persistent.getId());
-        file.setValue(persistent.getFileValue());
-        file.setGroup(Constants.FILE_GROUP);
-        Path path = Path.of(file_path);
-        Files.writeString(path, persistent.getFileValue(), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
-        appConfigRepository.save(file);
         appConfigRepository.save(appConfig);
     }
 
     @Override
     @Transactional(rollbackOn = Exception.class)
-    public void remove(Persistent persistent) throws IOException {
+    public void remove(Persistent persistent) {
         appConfigRepository.deleteById(persistent.getId());
-        appConfigRepository.deleteById("/data/" + persistent.getId());
-        Files.delete(Path.of("/data/" + persistent.getId()));
     }
 
     @Override
