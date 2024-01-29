@@ -24,6 +24,7 @@ public interface StorageRepository extends CrudRepository<Storage, Long>, Paging
 
     Optional<Storage> findByMountPath(String mount_path);
 
+    int deleteByIdLessThanAndDisabled(Long id, boolean disabled);
     int deleteByIdLessThan(Long id);
 
     // 更新driver

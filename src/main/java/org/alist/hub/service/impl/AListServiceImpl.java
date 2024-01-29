@@ -112,11 +112,12 @@ public class AListServiceImpl implements AListService {
     @Transactional(Transactional.TxType.NEVER)
     public void update() {
         if (appConfigService.isInitialized()) {
-            storageService.removeAll();
+            this.stopAList();
+            storageService.removeExpire();
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.command("sqlite3", Constants.DATA_DIR + "/data.db", ".read " + Constants.DATA_DIR + "/update.sql");
             CommandUtil.execute(processBuilder);
-            storageService.updateAliYunDrive();
+            storageService.resetStorage();//重新设置存储
             this.startAList();
         }
     }
@@ -142,6 +143,7 @@ public class AListServiceImpl implements AListService {
                 download("index.zip", "/index");
                 download("tvbox.zip", "/www");
             } catch (Exception e) {
+                log.error(e.getMessage(), e);
                 return false;
             }
             XiaoYaBo xiaoYaBo = new XiaoYaBo();

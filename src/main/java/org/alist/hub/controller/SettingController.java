@@ -2,6 +2,7 @@ package org.alist.hub.controller;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.alist.hub.api.AListClient;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.bo.PikPakBo;
@@ -9,8 +10,10 @@ import org.alist.hub.dto.AccountDTO;
 import org.alist.hub.dto.SecurityDTO;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.AppConfig;
+import org.alist.hub.model.Storage;
 import org.alist.hub.model.User;
 import org.alist.hub.repository.AppConfigRepository;
+import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.repository.UserRepository;
 import org.alist.hub.service.AliYunDriveService;
 import org.alist.hub.service.AliYunOpenService;
@@ -35,23 +38,26 @@ import java.util.Optional;
 public class SettingController {
     private final UserRepository userRepository;
     private final AppConfigService appConfigService;
-    private final StorageService storageService;
     private final AppConfigRepository appConfigRepository;
     private final AliYunDriveService aliYunDriveService;
     private final AliYunOpenService aliYunOpenService;
+    private final StorageRepository storageRepository;
+    private final StorageService storageService;
+    private final AListClient aListClient;
 
     @GetMapping("/security")
     public List<SecurityDTO> get() {
         List<SecurityDTO> securityDTOList = new ArrayList<>();
         Optional<User> optional = userRepository.findByUsername("guest");
+        Optional<Storage> ali = storageRepository.findById(Constants.MY_ALI_ID);
         if (optional.isPresent()) {
             User user = optional.get();
-            boolean value = user.getDisabled() == null || user.getDisabled() == 0;
+            boolean value = user.getDisabled() != null && user.getDisabled() != 0;
             securityDTOList.add(new SecurityDTO(value, "guest"));
         } else {
             securityDTOList.add(new SecurityDTO(false, "guest"));
         }
-        securityDTOList.add(new SecurityDTO(!storageService.getMyAli(), "ali"));
+        securityDTOList.add(new SecurityDTO(ali.map(Storage::isDisabled).orElse(false), "ali"));
         securityDTOList.add(new SecurityDTO(appConfigRepository.findById(Constants.TV_BOX_TOKEN).isPresent(), "tvbox"));
         return securityDTOList;
     }
@@ -67,7 +73,11 @@ public class SettingController {
                 });
                 break;
             case "ali":
-                storageService.updateMyAli(!securityDTO.getValue());
+                if (securityDTO.getValue()) {
+                    aListClient.disable(Constants.MY_ALI_ID);
+                } else {
+                    aListClient.enable(Constants.MY_ALI_ID);
+                }
                 break;
             case "tvbox":
                 AppConfig appConfig = new AppConfig();
@@ -87,21 +97,25 @@ public class SettingController {
 
     @PutMapping("/account")
     public void account(@RequestBody @Valid AccountDTO accountDTO) {
+        List<Storage> storages;
         switch (accountDTO.getType()) {
             case "drive":
                 String status = aliYunDriveService.authorize(accountDTO.getParams());
                 if (!"CONFIRMED".equals(status)) {
                     throw new ServiceException("校验失败");
                 }
-                storageService.updateAliYunDrive();
+                storages = storageRepository.findAllByDriver("AliyundriveShare2Open");
+                storages.forEach(storageService::flush);
                 break;
             case "openapi":
                 if (accountDTO.getParams().containsKey("url")) {
                     aliYunOpenService.authorize(accountDTO.getParams().get("url").toString());
-                    storageService.updateAliYunDrive();
                 } else {
                     throw new IllegalArgumentException("参数url未填写");
                 }
+                storages = storageRepository.findAllByDriver("AliyundriveShare2Open");
+                storageRepository.findById(Constants.MY_ALI_ID).ifPresent(storageService::flush);
+                storages.forEach(storageService::flush);
                 break;
             case "pikpak":
                 Map<String, Object> params = accountDTO.getParams();
@@ -110,8 +124,9 @@ public class SettingController {
                     pikPakBo.setPassword(params.get("password").toString());
                     pikPakBo.setUsername(params.get("username").toString());
                     appConfigService.saveOrUpdate(pikPakBo);
-                    storageService.updatePikPak();
                 }
+                storages = storageRepository.findAllByDriver("PikPakShare");
+                storages.forEach(storageService::flush);
                 break;
             default:
                 throw new ServiceException("未知类型");

@@ -1,3 +1,49 @@
+GET http://localhost:5244/api/admin/driver/list
+Accept: application/json, text/plain, */*
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzA2NjgxODM2LCJuYmYiOjE3MDY1MDkwMzYsImlhdCI6MTcwNjUwOTAzNn0.xvsQqrGzFQpy5MM4Rc7_rZKb1gPLR8CbaRl5XdwTMRI
+Content-Type: application/json;charset=UTF-8
+
+[
+  {
+    "key": "search_index",
+    "value": "database",
+    "help": "",
+    "type": "select",
+    "options": "database,database_non_full_text,bleve,none",
+    "group": 6,
+    "flag": 0
+  },
+  {
+    "key": "auto_update_index",
+    "value": "false",
+    "help": "",
+    "type": "bool",
+    "options": "",
+    "group": 6,
+    "flag": 0
+  },
+  {
+    "key": "ignore_paths",
+    "value": "",
+    "help": "one path per line",
+    "type": "text",
+    "options": "",
+    "group": 6,
+    "flag": 1
+  },
+  {
+    "key": "max_index_depth",
+    "value": "20",
+    "help": "max depth of index",
+    "type": "number",
+    "options": "",
+    "group": 6,
+    "flag": 1
+  }
+]
+
+###
+
 ###
 
 POST http://localhost/api/v1/open/initialize
@@ -10,8 +56,3 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:5245/api/v1/search_node/build
-Content-Type: application/json
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzA2NjA3MTY0LCJuYmYiOjE3MDY0MzQzNjQsImlhdCI6MTcwNjQzNDM2NH0.4vlyUizUcXYCcYKf21Qxr8qq-n4JbWawm35KNlEDBHs
-
-{}

@@ -55,14 +55,6 @@ public class AListClient {
     }
 
     /**
-     * 加载存储信息。
-     */
-    public void loadStorage() {
-        Payload payload = this.create("/admin/storage/load_all");
-        isSuccess(http.post(payload).asJsonNode());
-    }
-
-    /**
      * 重新启用指定id的存储
      *
      * @param id 存储的id
@@ -81,15 +73,6 @@ public class AListClient {
         isSuccess(http.post(create("/admin/storage/disable").addParam("id", id.toString())).asJsonNode());
     }
 
-
-    /**
-     * 根据id删除存储信息。
-     *
-     * @param id 要删除的存储信息的id
-     */
-    public void delete(Long id) {
-        isSuccess(http.post(create("/admin/storage/delete").addParam("id", id.toString())).asJsonNode());
-    }
 
     public void add(Storage storage) {
         Payload payload = create("/admin/storage/create");

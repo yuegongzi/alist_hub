@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import org.alist.hub.api.AliYunDriveClient;
 import org.alist.hub.bo.AliYunSignBO;
+import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class ScheduledTask {
     private final AliYunDriveClient aliYunDriveClient;
     private final AppConfigService appConfigService;
+    private final AListService aListService;
 
     @Scheduled(cron = "0 17 9 * * ?")
     public void sign() {
@@ -22,11 +24,10 @@ public class ScheduledTask {
         appConfigService.saveOrUpdate(aliYunSignBO);
     }
 
-    @Scheduled(cron = "0 36 4 * * ?")
-    public void executeTask() {
-        AliYunSignBO aliYunSignBO = new AliYunSignBO();
-        JsonNode jsonNode = aliYunDriveClient.sign();
-        aliYunSignBO.setResult(jsonNode);
-        appConfigService.saveOrUpdate(aliYunSignBO);
+    @Scheduled(cron = "0 32 04 * * ?")
+    public void update() {
+        if (aListService.checkUpdate()) {
+            aListService.update();
+        }
     }
 }

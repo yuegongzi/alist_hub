@@ -4,17 +4,15 @@ package org.alist.hub.service;
 import org.alist.hub.model.Storage;
 
 public interface StorageService {
-    void updateAliYunDrive();
+    void resetStorage();
 
-    void setAliAddition(Storage... storages);
+    void removeExpire();
 
-    void setPikPakAddition(Storage... storages);
+    /**
+     * 刷新数据
+     *
+     * @param storage 存储
+     */
+    void flush(Storage storage);
 
-    void removeAll();
-
-    boolean getMyAli();
-
-    void updateMyAli(boolean disabled);
-
-    void updatePikPak();
 }
