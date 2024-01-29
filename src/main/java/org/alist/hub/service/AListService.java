@@ -16,28 +16,23 @@ public interface AListService {
     boolean stopAList();
 
     /**
-     * 初始化
-     */
-    void initialize(String password);
-
-    /**
      * 启动Nginx
-     *
-     * @return 是否成功启动Nginx
      */
-    boolean startNginx();
+    void startNginx();
 
     /**
      * 停止Nginx
-     *
-     * @return 是否成功停止Nginx
      */
-    boolean stopNginx();
+    void stopNginx();
 
     /**
      * 更新小雅
-     *
+     */
+    void update();
+
+    /**
+     * 更新前的准备
      * @return boolean
      */
-    boolean update();
+    boolean checkUpdate();
 }

@@ -7,6 +7,7 @@ import org.alist.hub.bean.Query;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.Storage;
 import org.alist.hub.repository.StorageRepository;
+import org.alist.hub.service.AListService;
 import org.alist.hub.service.StorageService;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +28,7 @@ public class StorageController {
     private final StorageRepository storageRepository;
     private final StorageService storageService;
     private final AListClient aListClient;
+    private final AListService aListService;
 
     @GetMapping
     public Page<Storage> get(Storage storage, Query query) {
@@ -43,23 +45,20 @@ public class StorageController {
             case "AliyundriveShare2Open":
                 storage.build();
                 storage.setId(System.currentTimeMillis());
-                storage.setDisabled(true);
+                storage.setDisabled(false);
                 storageService.setAliAddition(storage);
-                aListClient.enable(storage.getId());
                 break;
             case "PikPakShare":
                 storage.build();
                 storage.setId(System.currentTimeMillis());
-                storage.setDisabled(true);
+                storage.setDisabled(false);
                 storageService.setPikPakAddition(storage);
-                aListClient.enable(storage.getId());
                 break;
             default:
                 storage.build();
                 storage.setId(System.currentTimeMillis());
-                storage.setDisabled(true);
+                storage.setDisabled(false);
                 storageRepository.save(storage);
-                aListClient.enable(storage.getId());
                 break;
         }
 
@@ -67,7 +66,8 @@ public class StorageController {
 
     @GetMapping("/load")
     public void load() {
-        aListClient.loadStorage();
+        aListService.stopAList();
+        aListService.startAList();
     }
 
     @DeleteMapping("/{id}")

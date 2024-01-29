@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,6 +29,7 @@ public class Http {
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
                 .toEntity(String.class)
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
                 .block(Duration.ofSeconds(30)));
     }
 
@@ -39,6 +41,7 @@ public class Http {
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
                 .toEntity(String.class)
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
                 .block(Duration.ofSeconds(30))
         );
     }
@@ -50,6 +53,7 @@ public class Http {
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
                 .toEntity(String.class)
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
                 .block(Duration.ofSeconds(30)));
     }
 
@@ -61,6 +65,7 @@ public class Http {
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
                 .toEntity(String.class)
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
                 .block(Duration.ofSeconds(30)));
     }
 
@@ -69,7 +74,8 @@ public class Http {
         Flux<DataBuffer> dataBuffer = webClient.get()
                 .uri(payload.getUri())
                 .retrieve()
-                .bodyToFlux(DataBuffer.class);
+                .bodyToFlux(DataBuffer.class)
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)));
         try {
             Path path = Paths.get(targetPath);
             DataBufferUtils.write(dataBuffer, path)

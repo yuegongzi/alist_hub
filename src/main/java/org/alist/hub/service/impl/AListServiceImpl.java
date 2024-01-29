@@ -1,5 +1,6 @@
 package org.alist.hub.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.api.Http;
@@ -7,8 +8,6 @@ import org.alist.hub.api.Payload;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.XiaoYaBo;
 import org.alist.hub.exception.ServiceException;
-import org.alist.hub.model.User;
-import org.alist.hub.repository.UserRepository;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.StorageService;
@@ -33,73 +32,48 @@ import java.util.Optional;
 @AllArgsConstructor
 public class AListServiceImpl implements AListService {
     private final AppConfigService appConfigService;
-    private final UserRepository userRepository;
     private final StorageService storageService;
     private final Http http;
 
     @Override
-    public boolean startNginx() {
+    public void startNginx() {
         ClassPathResource classPathResource = new ClassPathResource("db/migration/nginx.conf");
         try {
             byte[] bytes = FileCopyUtils.copyToByteArray(classPathResource.getInputStream());
             String conf = new String(bytes, StandardCharsets.UTF_8);
             Files.writeString(Path.of("/etc/nginx/http.d/default.conf"), conf, StandardCharsets.UTF_8);
             stopNginx();
-            return CommandUtil.execute(new ProcessBuilder("nginx"));
+            CommandUtil.execute(new ProcessBuilder("nginx"));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return false;
         }
     }
 
     @Override
-    public boolean stopNginx() {
+    public void stopNginx() {
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("nginx", "-s", "stop");
-        return CommandUtil.execute(builder);
+        CommandUtil.execute(builder);
     }
 
     /**
-     * 启动 AList 服务。
+     * 启动 AList 服务。单开线程进行启动,避免一直阻塞影响其他服务
      *
-     * @return 如果成功启动返回 true，否则返回 false
+     * @return 如果成功启动返回 true
      */
     @Override
     public boolean startAList() {
-        try {
-            ProcessBuilder alist = new ProcessBuilder();
-            alist.command("/opt/alist/alist", "server", "--no-prefix");
-            return CommandUtil.execute(alist);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        return false;
-    }
-
-    @Override
-    public void initialize(String password) {
-        try {
-            appConfigService.initialize();
-            new Thread(() -> {
-                try {
-                    Thread.sleep(1000);
-                    update();
-                    Optional<User> user = userRepository.findByUsername("admin");
-                    user.map(u -> {
-                        u.setDisabled(0);
-                        u.setPassword(password);
-                        return userRepository.save(u);
-                    });
-                    this.stopAList();
-                    Thread.sleep(1000);
-                    this.startAList();
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }).start();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+                ProcessBuilder alist = new ProcessBuilder();
+                alist.command("/opt/alist/alist", "server", "--no-prefix");
+                CommandUtil.execute(alist);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }).start();
+        return true;
     }
 
     /**
@@ -133,35 +107,27 @@ public class AListServiceImpl implements AListService {
 
     /**
      * 更新应用程序
-     *
-     * @return 更新是否成功
      */
     @Override
-    public boolean update() {
-        String version = checkUpdate();
-        if (StringUtils.hasText(version) && appConfigService.isInitialized()) {
-            download("update.zip", Constants.DATA_DIR);
-            download("index.zip", "/index");
-            download("tvbox.zip", "/www");
+    @Transactional(Transactional.TxType.NEVER)
+    public void update() {
+        if (appConfigService.isInitialized()) {
             storageService.removeAll();
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.command("sqlite3", Constants.DATA_DIR + "/data.db", ".read " + Constants.DATA_DIR + "/update.sql");
             CommandUtil.execute(processBuilder);
             storageService.updateAliYunDrive();
-            XiaoYaBo xiaoYaBo = new XiaoYaBo();
-            xiaoYaBo.setUpdateTime(new Date());
-            xiaoYaBo.setVersion(version);
-            appConfigService.saveOrUpdate(xiaoYaBo);
+            this.startAList();
         }
-        return true;
     }
 
     /**
-     * 检查是否有新版本更新
+     * 检查是否有新版本更新,且已下载完毕
      *
-     * @return 新版本号，若无更新返回null
+     * @return 新版本号，若无更新返回false
      */
-    private String checkUpdate() {
+    @Override
+    public boolean checkUpdate() {
         // 获取最新版本号
         String version = http.get(Payload.create(Constants.XIAOYA_BASE_URL + "/version.txt")).getBody();
         version = version.replaceAll("[\n\r]+", "");
@@ -169,18 +135,22 @@ public class AListServiceImpl implements AListService {
         // 查询已安装版本号
         Optional<XiaoYaBo> xiaoYaBoOptional = appConfigService.get(new XiaoYaBo(), XiaoYaBo.class);
 
-        // 如果未安装则直接返回最新版本号
-        if (xiaoYaBoOptional.isEmpty()) {
-            return version;
+        // 如果未安装则直接返回最新版本号 或 最新版本号小于已安装版本号，则返回最新版本号
+        if (xiaoYaBoOptional.isEmpty() || StringUtils.compareVersions(xiaoYaBoOptional.get().getVersion(), version) < 0) {
+            try {
+                download("update.zip", Constants.DATA_DIR);
+                download("index.zip", "/index");
+                download("tvbox.zip", "/www");
+            } catch (Exception e) {
+                return false;
+            }
+            XiaoYaBo xiaoYaBo = new XiaoYaBo();
+            xiaoYaBo.setUpdateTime(new Date());
+            xiaoYaBo.setVersion(version);
+            appConfigService.saveOrUpdate(xiaoYaBo);
+            return true;
         }
-
-        // 如果最新版本号小于已安装版本号，则返回最新版本号
-        if (StringUtils.compareVersions(xiaoYaBoOptional.get().getVersion(), version) < 0) {
-            return version;
-        }
-
-        // 否则返回null，表示无更新
-        return null;
+        return false;
     }
 
 }

@@ -60,19 +60,28 @@ public class InitialServiceImpl implements InitialService {
     @Override
     public boolean execute() {
         try {
+            // 创建表
             createTable();
+            // 启动Nginx服务
             aListService.startNginx();
+            // 创建脚本
             createScript();
+            // 如果appConfigService已经初始化，则进行以下操作
             if (appConfigService.isInitialized()) {
+                // 解压缩index.zip文件到/index目录
                 ZipUtil.unzipFile(Path.of(Constants.DATA_DIR + "/index.zip"), Path.of("/index"));
+                // 解压缩tvbox.zip文件到/www目录
                 ZipUtil.unzipFile(Path.of(Constants.DATA_DIR + "/tvbox.zip"), Path.of("/www"));
+                // 启动AList服务
                 aListService.startAList();
             }
             return true;
         } catch (Exception e) {
+            // 打印异常信息
             log.error(e.getMessage(), e);
         }
         return false;
     }
+
 
 }

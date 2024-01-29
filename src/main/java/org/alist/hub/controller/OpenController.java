@@ -11,9 +11,12 @@ import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.Response;
 import org.alist.hub.dto.InitializeDTO;
 import org.alist.hub.exception.ServiceException;
+import org.alist.hub.model.User;
+import org.alist.hub.repository.UserRepository;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AliYunDriveService;
 import org.alist.hub.service.AliYunOpenService;
+import org.alist.hub.service.AppConfigService;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 定义所有的开放接口 允许未登入访问
@@ -33,8 +37,10 @@ import java.util.Map;
 public class OpenController {
     private final Http http;
     private final AListService aListService;
+    private final AppConfigService appConfigService;
     private final AliYunDriveService aliYunDriveService;
     private final AliYunOpenService aliYunOpenService;
+    private final UserRepository userRepository;
 
     /**
      * 获取授权二维码
@@ -59,6 +65,9 @@ public class OpenController {
      */
     @PostMapping("/aliyun/drive/qr")
     public String drive_qr_auth(@RequestBody Map<String, Object> body) {
+        if (appConfigService.isInitialized()) {
+            throw new ServiceException("已经初始化过");
+        }
         return aliYunDriveService.authorize(body);
     }
 
@@ -87,6 +96,9 @@ public class OpenController {
      */
     @PostMapping("/aliyun/openapi/qr")
     public void openapi_qr_auth(@RequestBody Map<String, String> body) {
+        if (appConfigService.isInitialized()) {
+            throw new ServiceException("已经初始化过");
+        }
         String url = body.get("url");
         aliYunOpenService.authorize(url);
     }
@@ -100,6 +112,20 @@ public class OpenController {
     @PostMapping("/initialize")
     @SneakyThrows
     public void initialize(@RequestBody @Valid InitializeDTO initializeDTO) {
-        aListService.initialize(initializeDTO.getPassword());
+        if (appConfigService.isInitialized()) {
+            throw new ServiceException("已经初始化过");
+        }
+        if (!aListService.checkUpdate()) {
+            throw new ServiceException("从服务器下载更新文件失败, 请检查服务器网络是否通畅");
+        }
+        appConfigService.initialize();
+        Optional<User> user = userRepository.findByUsername("admin");
+        user.map(u -> {
+            u.setDisabled(0);
+            u.setPassword(initializeDTO.getPassword());
+            return userRepository.save(u);
+        });
+        aListService.update();
+
     }
 }

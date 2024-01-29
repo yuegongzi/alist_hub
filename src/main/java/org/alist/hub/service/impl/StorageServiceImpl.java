@@ -24,8 +24,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,33 +45,29 @@ public class StorageServiceImpl implements StorageService {
         if (aliYunOpenBO.isEmpty() || aliYunDriveBO.isEmpty() || aliYunFolderBO.isEmpty()) {
             throw new ServiceException("阿里云盘配置未填写");
         }
-        List<Storage> list = new ArrayList<>();
-        Arrays.stream(storages).toList().forEach(storage -> {
-            Map<String, Object> addition = storage.getAddition();
+        for (Storage storage : storages) {
+            Map<String, Object> addition = new HashMap<>(storage.getAddition());
             addition.put("RefreshToken", aliYunDriveBO.get().getRefreshToken());
             addition.put("RefreshTokenOpen", aliYunOpenBO.get().getRefreshToken());
             addition.put("TempTransferFolderID", aliYunFolderBO.get().getFolderId());
-            addition.put("oauth_token_url", Constants.API_DOMAIN + "/alist/ali_open/token");
+            addition.put("rorb", "r");
             storage.setAddition(addition);
-            list.add(storage);
-        });
-        storageRepository.saveAll(list);
+            storageRepository.saveAndFlush(storage);
+        }
     }
 
     @Override
     public void setPikPakAddition(Storage... storages) {
         Optional<PikPakBo> pikPakBo = appConfigService.get(new PikPakBo(), PikPakBo.class);
         if (pikPakBo.isPresent()) {
-            List<Storage> list = new ArrayList<>();
-            Arrays.stream(storages).toList().forEach(storage -> {
-                Map<String, Object> addition = storage.getAddition();
+            for (Storage storage : storages) {
+                Map<String, Object> addition = new HashMap<>(storage.getAddition());
                 addition.put("username", pikPakBo.get().getUsername());
                 addition.put("password", pikPakBo.get().getPassword());
                 storage.setAddition(addition);
                 storage.setAddition(addition);
-                list.add(storage);
-            });
-            storageRepository.saveAll(list);
+                storageRepository.saveAndFlush(storage);
+            }
         }
 
     }
@@ -82,6 +76,7 @@ public class StorageServiceImpl implements StorageService {
     @Transactional
     public void updateAliYunDrive() {
         storageRepository.updateDriver("AliyundriveShare", "AliyundriveShare2Open");
+        storageRepository.deleteByIdLessThan(4L);
         List<Storage> list = storageRepository.findAllByDriver("AliyundriveShare2Open");
         setAliAddition(list.toArray(new Storage[0]));
     }
@@ -154,6 +149,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
+    @Transactional
     public void updatePikPak() {
         Optional<PikPakBo> pikPakBo = appConfigService.get(new PikPakBo(), PikPakBo.class);
         if (pikPakBo.isPresent()) {

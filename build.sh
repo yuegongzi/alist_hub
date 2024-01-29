@@ -1,2 +1,3 @@
 #!/usr/bin/env sh
-docker build -f ./Dockerfile -t aetherlib/alist-hub:1.0.0 .
+mvn clean package -Dmaven.test.skip=true
+docker build -f ./Dockerfile -t aetherlib/alist-hub:$1 .

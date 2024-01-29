@@ -9,6 +9,7 @@ import org.alist.hub.bean.FileSystem;
 import org.alist.hub.bean.FileSystemResp;
 import org.alist.hub.bean.Response;
 import org.alist.hub.exception.ServiceException;
+import org.alist.hub.model.Storage;
 import org.alist.hub.model.User;
 import org.alist.hub.repository.UserRepository;
 import org.alist.hub.utils.JsonUtil;
@@ -90,6 +91,22 @@ public class AListClient {
         isSuccess(http.post(create("/admin/storage/delete").addParam("id", id.toString())).asJsonNode());
     }
 
+    public void add(Storage storage) {
+        Payload payload = create("/admin/storage/create");
+        payload.addBody("mount_path", storage.getMountPath());
+        payload.addBody("order", storage.getOrder());
+        payload.addBody("remark", storage.getRemark());
+        payload.addBody("cache_expiration", storage.getCacheExpiration());
+        payload.addBody("web_proxy", false);
+        payload.addBody("webdav_policy", storage.getWebdavPolicy());
+        payload.addBody("down_proxy_url", storage.getDownProxyUrl());
+        payload.addBody("extract_folder", storage.getExtractFolder());
+        payload.addBody("driver", storage.getDriver());
+        payload.addBody("order_by", storage.getOrderBy());
+        payload.addBody("order_direction", storage.getOrderDirection());
+        payload.addBody("addition", JsonUtil.toJson(storage.getAddition()));
+        isSuccess(http.post(payload).asJsonNode());
+    }
 
     /**
      * 进行身份验证
