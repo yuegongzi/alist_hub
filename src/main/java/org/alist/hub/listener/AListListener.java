@@ -19,7 +19,7 @@ public class AListListener implements ApplicationListener<ApplicationReadyEvent>
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         String env = event.getApplicationContext().getEnvironment().getActiveProfiles()[0];
-        if (!"dev".equals(env)) {
+        if ("prod".equals(env)) {
             initialService.execute();
         }
 

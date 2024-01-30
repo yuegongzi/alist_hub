@@ -66,6 +66,12 @@
             <artifactId>jakarta.validation-api</artifactId>
             <version>3.1.0-M1</version>
         </dependency>
+        <!--fix mac os arm64-->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver-dns-native-macos</artifactId>
+            <classifier>osx-aarch_64</classifier>
+        </dependency>
     </dependencies>
 
     <build>

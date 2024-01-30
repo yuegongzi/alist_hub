@@ -1,5 +1,4 @@
-GET http://localhost:5244/api/admin/driver/list
-Accept: application/json, text/plain, */*
+POST http://localhost:5244/api/admin/setting/save
 Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzA2NjgxODM2LCJuYmYiOjE3MDY1MDkwMzYsImlhdCI6MTcwNjUwOTAzNn0.xvsQqrGzFQpy5MM4Rc7_rZKb1gPLR8CbaRl5XdwTMRI
 Content-Type: application/json;charset=UTF-8
 
@@ -44,8 +43,6 @@ Content-Type: application/json;charset=UTF-8
 
 ###
 
-###
-
 POST http://localhost/api/v1/open/initialize
 Content-Type: application/json
 
@@ -56,3 +53,13 @@ Content-Type: application/json
 
 ###
 
+POST  http://localhost:5244/api/admin/task/upload/info
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzA2NjgxODM2LCJuYmYiOjE3MDY1MDkwMzYsImlhdCI6MTcwNjUwOTAzNn0.xvsQqrGzFQpy5MM4Rc7_rZKb1gPLR8CbaRl5XdwTMRI
+Content-Type: application/json;charset=UTF-8
+
+{
+  "paths": [
+    "/"
+  ],
+  "max_depth": -1
+}

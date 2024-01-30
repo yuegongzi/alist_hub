@@ -3,7 +3,6 @@ package org.alist.hub.controller;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.alist.hub.bean.Query;
-import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.Storage;
 import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.service.StorageService;
@@ -31,9 +30,7 @@ public class StorageController {
     @PostMapping
     public void add(@RequestBody @Valid Storage storage) {
         Optional<Storage> temp = storageRepository.findByMountPath(storage.getMountPath());
-        if (temp.isPresent()) {
-            throw new ServiceException("挂载路径已存在");
-        }
+        temp.ifPresent(value -> storage.setId(value.getId()));
         storage.build();
         storage.setDisabled(false);
         storageService.flush(storage);

@@ -4,6 +4,11 @@
 <input type="hidden" name="type" value="video">
 </FORM>
 <script>
+<style type="text/css">
+    .markdown-body{
+        display: none !important;
+    }
+</style>
 function addsearch() {
     let searchObj = document.querySelector(".markdown-body form");
     if(searchObj){

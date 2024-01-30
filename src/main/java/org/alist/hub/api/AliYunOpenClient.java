@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.DriveInfo;
 import org.alist.hub.bean.FileInfo;
+import org.alist.hub.bean.FileItem;
+import org.alist.hub.bean.FileItemResp;
 import org.alist.hub.bean.Response;
 import org.alist.hub.bo.AliYunOpenBO;
 import org.alist.hub.bo.Persistent;
@@ -16,6 +18,8 @@ import org.alist.hub.utils.JsonUtil;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -107,5 +111,17 @@ public class AliYunOpenClient {
         return Optional.empty();
     }
 
+    public List<FileItem> getFileList(String driveId, String parentFileId) {
+        Optional<FileItemResp> resp = http.post(createPayload("/adrive/v1.0/openFile/list")
+                .addBody("drive_id", driveId)
+                .addBody("parent_file_id", parentFileId)).asValue(FileItemResp.class);
+        return resp.map(FileItemResp::getItems).orElse(new ArrayList<>());
+    }
 
+    //文件删除
+    public boolean deleteFile(String driveId, String fileId) {
+        return http.post(createPayload("/adrive/v1.0/openFile/delete")
+                .addBody("drive_id", driveId)
+                .addBody("file_id", fileId)).getStatusCode().is2xxSuccessful();
+    }
 }

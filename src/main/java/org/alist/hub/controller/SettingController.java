@@ -1,11 +1,15 @@
 package org.alist.hub.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.alist.hub.api.AListClient;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.bo.PikPakBo;
+import org.alist.hub.configure.HubProperties;
 import org.alist.hub.dto.AccountDTO;
 import org.alist.hub.dto.SecurityDTO;
 import org.alist.hub.exception.ServiceException;
@@ -19,14 +23,19 @@ import org.alist.hub.service.AliYunDriveService;
 import org.alist.hub.service.AliYunOpenService;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.StorageService;
+import org.alist.hub.utils.JsonUtil;
 import org.alist.hub.utils.RandomUtil;
+import org.alist.hub.utils.StringUtils;
 import org.alist.hub.vo.AccountVO;
+import org.alist.hub.vo.ConfigVO;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +53,7 @@ public class SettingController {
     private final StorageRepository storageRepository;
     private final StorageService storageService;
     private final AListClient aListClient;
+    private final HubProperties hubProperties;
 
     @GetMapping("/security")
     public List<SecurityDTO> get() {
@@ -65,13 +75,6 @@ public class SettingController {
     @PutMapping("/security")
     public void security(@RequestBody @Valid SecurityDTO securityDTO) {
         switch (securityDTO.getLabel()) {
-            case "guest":
-                Optional<User> optional = userRepository.findByUsername("guest");
-                optional.map(user -> {
-                    user.setDisabled(securityDTO.getValue() ? 1 : 0);
-                    return userRepository.save(user);
-                });
-                break;
             case "ali":
                 if (securityDTO.getValue()) {
                     aListClient.disable(Constants.MY_ALI_ID);
@@ -143,5 +146,31 @@ public class SettingController {
         accountVO.setPikpak(pk.map(PikPakBo::getUsername).orElse(null));
         accountVO.setUsername(al.map(AliYunDriveBO::getUserName).orElse(null));
         return accountVO;
+    }
+
+    @GetMapping("/config")
+    @SneakyThrows
+    public ConfigVO getConfig() {
+        String config = Files.readString(Path.of(hubProperties.getPath() + "/config.json"));
+        JsonNode jsonNode = JsonUtil.readTree(config);
+        ConfigVO configVO = new ConfigVO();
+        configVO.setOpenTokenUrl(jsonNode.findPath("opentoken_auth_url").asText());
+        configVO.setSiteUrl(jsonNode.findPath("site_url").asText());
+        return configVO;
+    }
+
+    @PutMapping("/config")
+    @SneakyThrows
+    public void updateConfig(@RequestBody ConfigVO configVO) {
+        String config = Files.readString(Path.of(hubProperties.getPath() + "/config.json"));
+        JsonNode jsonNode = JsonUtil.readTree(config);
+        ObjectNode objectNode = (ObjectNode) jsonNode;
+        if (StringUtils.hasText(configVO.getOpenTokenUrl())) {
+            objectNode.put("opentoken_auth_url", configVO.getOpenTokenUrl());
+        }
+        if (StringUtils.hasText(configVO.getSiteUrl())) {
+            objectNode.put("site_url", configVO.getSiteUrl());
+        }
+        Files.writeString(Path.of(hubProperties.getPath() + "/config.json"), JsonUtil.toJson(objectNode));
     }
 }

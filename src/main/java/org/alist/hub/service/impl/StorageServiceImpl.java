@@ -222,7 +222,7 @@ public class StorageServiceImpl implements StorageService {
                     ad1.put("username", pikPakBo.get().getUsername());
                     ad1.put("password", pikPakBo.get().getPassword());
                     storage.setAddition(ad1);
-                    aListClient.add(storage);
+                    aListClient.addOrUpdate(storage);
                 }
                 break;
             case "AliyundriveShare2Open":
@@ -235,18 +235,19 @@ public class StorageServiceImpl implements StorageService {
                     ad2.put("TempTransferFolderID", aliYunFolderBO.get().getFolderId());
                     ad2.put("rorb", "r");
                     storage.setAddition(ad2);
-                    aListClient.add(storage);
+                    aListClient.addOrUpdate(storage);
                 }
+                break;
             case "AliyundriveOpen":
                 if (aliYunOpenBO.isPresent()) {
                     Map<String, Object> ad3 = new HashMap<>(storage.getAddition());
                     ad3.put("AccessToken", aliYunOpenBO.get().getAccessToken());
                     ad3.put("refresh_token", aliYunOpenBO.get().getRefreshToken());
                     storage.setAddition(ad3);
-                    aListClient.add(storage);
+                    aListClient.addOrUpdate(storage);
                 }
             default:
-                aListClient.add(storage);
+                aListClient.addOrUpdate(storage);
         }
     }
 }

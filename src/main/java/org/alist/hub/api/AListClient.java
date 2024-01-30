@@ -74,10 +74,14 @@ public class AListClient {
     }
 
 
-    public void add(Storage storage) {
-        Payload payload = create("/admin/storage/create");
+    public void addOrUpdate(Storage storage) {
+        String path = storage.getId() == null ? "create" : "update";
+        Payload payload = create("/admin/storage/" + path);
         payload.addBody("mount_path", storage.getMountPath());
         payload.addBody("order", storage.getOrder());
+        if (storage.getId() != null) {
+            payload.addBody("id", storage.getId());
+        }
         payload.addBody("remark", storage.getRemark());
         payload.addBody("cache_expiration", storage.getCacheExpiration());
         payload.addBody("web_proxy", false);

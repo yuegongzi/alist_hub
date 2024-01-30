@@ -8,3 +8,4 @@ mkdir -p /web
 unzip -o /dist.zip -d /web
 mv /web/dist /web/@hub
 java -Duser.timezone='GMT+08' -jar /app.jar --spring.profiles.active=prod
+#sleep 100000
