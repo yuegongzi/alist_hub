@@ -112,16 +112,42 @@ public class AListClient {
         return jsonNode.findValue("token").asText();
     }
 
+    private int calculateTotalPages(int total, int pageSize) {
+        // 计算总页数
+        int totalPages = total / pageSize;
+
+        // 如果总记录数不能被每页记录数整除（有余数），说明还需要额外一页来展示剩余记录
+        if (total % pageSize != 0) {
+            totalPages++;
+        }
+
+        return totalPages;
+    }
+
     public List<FileSystem> fs(String path) {
+        List<FileSystem> list = new ArrayList<>();
+        fsExecute(path, list, 1);
+        return list;
+    }
+
+    public void fsExecute(String path, List<FileSystem> list, int page) {
         JsonNode jsonNode = http.post(create("/fs/list")
                         .addBody("path", path)
+                        .addBody("page", page)
                         .addBody("password", "")
-                        .addBody("per_page", 200))
+                        .addBody("per_page", 50))
                 .asJsonNode();
         if (jsonNode.findValue("code").asInt() == 200) {
             Optional<FileSystemResp> resp = JsonUtil.jsonNodeToObject(jsonNode.findValue("data"), FileSystemResp.class);
-            return resp.map(FileSystemResp::getContent).orElse(new ArrayList<>());
+            resp.ifPresent(r -> {
+                if (r.getContent() != null) {
+                    list.addAll(r.getContent());
+                    if (calculateTotalPages(r.getTotal(), 50) > page) {
+                        fsExecute(path, list, page + 1);
+                    }
+                }
+
+            });
         }
-        return new ArrayList<>();
     }
 }

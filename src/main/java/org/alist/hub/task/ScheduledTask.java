@@ -10,6 +10,7 @@ import org.alist.hub.bo.AliYunFolderBO;
 import org.alist.hub.bo.AliYunSignBO;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
+import org.alist.hub.service.SearchNodeService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +26,7 @@ public class ScheduledTask {
     private final AppConfigService appConfigService;
     private final AListService aListService;
     private final AliYunOpenClient aliYunOpenClient;
+    private final SearchNodeService searchNodeService;
 
     @Scheduled(cron = "0 17 9 * * ?")
     public void sign() {
@@ -34,14 +36,22 @@ public class ScheduledTask {
         appConfigService.saveOrUpdate(aliYunSignBO);
     }
 
-    @Scheduled(cron = "0 32 04 * * ?")
+    @Scheduled(cron = "0 17 05 * * ?")
     public void update() {
         if (aListService.checkUpdate()) {
             aListService.update();
         }
     }
 
-    @Scheduled(initialDelay = 60 * 1000, fixedRate = 10 * 60 * 1000)
+    @Scheduled(cron = "0 32 11,23 * * ?")
+    public void build() {
+        searchNodeService.build();
+    }
+
+    /**
+     * 定时任务，用于删除过期文件
+     */
+    @Scheduled(initialDelay = 120 * 1000, fixedRate = 20 * 60 * 1000)
     public void deleteExpire() {
         Optional<AliYunFolderBO> aliYunFolderBO = appConfigService.get(new AliYunFolderBO(), AliYunFolderBO.class);
         aliYunFolderBO.ifPresent(yunFolderBO -> {

@@ -4,8 +4,6 @@ spring:
     driver-class-name: org.sqlite.JDBC
   jpa:
     show-sql: true
-    hibernate:
-      ddl-auto: none
 logging:
   level:
     web: DEBUG

@@ -7,4 +7,5 @@ import java.util.List;
 @Data
 public class FileSystemResp {
     private List<FileSystem> content;
+    private Integer total;
 }

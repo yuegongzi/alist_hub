@@ -31,4 +31,6 @@ public interface StorageRepository extends CrudRepository<Storage, Long>, Paging
     @Modifying
     @Query("UPDATE Storage s SET s.driver = :driver WHERE s.driver = :oldDriver")
     int updateDriver(String oldDriver, String driver);
+
+    List<Storage> findAllByIdGreaterThan(Long id);
 }

@@ -11,6 +11,8 @@ spring:
         one-indexed-parameters: true
   jpa:
     open-in-view: false
+    hibernate:
+      ddl-auto: update
     database-platform: org.hibernate.community.dialect.SQLiteDialect
   devtools:
     add-properties: false

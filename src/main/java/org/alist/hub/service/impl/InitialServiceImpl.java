@@ -6,7 +6,6 @@ import org.alist.hub.bean.Constants;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.InitialService;
-import org.alist.hub.sql.SqlScriptBatchExecutor;
 import org.alist.hub.utils.CommandUtil;
 import org.alist.hub.utils.ZipUtil;
 import org.springframework.core.io.ClassPathResource;
@@ -22,17 +21,9 @@ import java.nio.file.Path;
 @Slf4j
 @AllArgsConstructor
 public class InitialServiceImpl implements InitialService {
-    private final SqlScriptBatchExecutor sqlExecutor;
     private final AppConfigService appConfigService;
     private final AListService aListService;
 
-
-    private void createTable() throws Exception {
-        ClassPathResource classPathResource = new ClassPathResource("db/migration/create.sql");
-        byte[] bytes = FileCopyUtils.copyToByteArray(classPathResource.getInputStream());
-        String sql = new String(bytes, StandardCharsets.UTF_8);
-        sqlExecutor.executeSQL(sql);
-    }
 
     /**
      * 创建脚本
@@ -60,8 +51,6 @@ public class InitialServiceImpl implements InitialService {
     @Override
     public boolean execute() {
         try {
-            // 创建表
-            createTable();
             // 启动Nginx服务
             aListService.startNginx();
             // 创建脚本

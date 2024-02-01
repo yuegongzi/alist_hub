@@ -9,25 +9,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-@Entity
 @Data
-@Table(name = "x_search_node")
-public class SearchNode {
+@Entity
+@Table(name = "x_movie")
+public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "parent")
-    private String parent;  // 父节点
-
     @Column(name = "name")
-    private String name;  // 节点名称
-
-    @Column(name = "is_dir")
-    private boolean isDir;  // 是否为目录
-
-    @Column(name = "size")
-    private Long size;  // 文件大小
-
-    @Column(name = "type")
-    private Integer type;  // 类型
+    private String name;
+    @Column(name = "score")
+    private Double score;
+    @Column(name = "image_url")
+    private String imageUrl;
+    @Column(name = "movie_id")
+    private Long movieId;
+    @Column(name = "path")
+    private String path;
 }

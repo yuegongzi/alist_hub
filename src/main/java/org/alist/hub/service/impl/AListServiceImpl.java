@@ -10,6 +10,7 @@ import org.alist.hub.bo.XiaoYaBo;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
+import org.alist.hub.service.SearchNodeService;
 import org.alist.hub.service.StorageService;
 import org.alist.hub.utils.CommandUtil;
 import org.alist.hub.utils.StringUtils;
@@ -33,6 +34,7 @@ import java.util.Optional;
 public class AListServiceImpl implements AListService {
     private final AppConfigService appConfigService;
     private final StorageService storageService;
+    private final SearchNodeService searchNodeService;
     private final Http http;
 
     @Override
@@ -114,6 +116,7 @@ public class AListServiceImpl implements AListService {
         if (appConfigService.isInitialized()) {
             this.stopAList();
             storageService.removeExpire();
+            searchNodeService.update();
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.command("sqlite3", Constants.DATA_DIR + "/data.db", ".read " + Constants.DATA_DIR + "/update.sql");
             CommandUtil.execute(processBuilder);

@@ -1,45 +1,14 @@
-POST http://localhost:5244/api/admin/setting/save
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzA2NjgxODM2LCJuYmYiOjE3MDY1MDkwMzYsImlhdCI6MTcwNjUwOTAzNn0.xvsQqrGzFQpy5MM4Rc7_rZKb1gPLR8CbaRl5XdwTMRI
+POST http://localhost:5244/api/fs/list
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzA2ODYyMTExLCJuYmYiOjE3MDY2ODkzMTEsImlhdCI6MTcwNjY4OTMxMX0._1AVt4XL2Ot-thCLP-t7pDiPxbsIMsPhXWRq_W8HO00
 Content-Type: application/json;charset=UTF-8
 
-[
-  {
-    "key": "search_index",
-    "value": "database",
-    "help": "",
-    "type": "select",
-    "options": "database,database_non_full_text,bleve,none",
-    "group": 6,
-    "flag": 0
-  },
-  {
-    "key": "auto_update_index",
-    "value": "false",
-    "help": "",
-    "type": "bool",
-    "options": "",
-    "group": 6,
-    "flag": 0
-  },
-  {
-    "key": "ignore_paths",
-    "value": "",
-    "help": "one path per line",
-    "type": "text",
-    "options": "",
-    "group": 6,
-    "flag": 1
-  },
-  {
-    "key": "max_index_depth",
-    "value": "20",
-    "help": "max depth of index",
-    "type": "number",
-    "options": "",
-    "group": 6,
-    "flag": 1
-  }
-]
+{
+  "path": "/七米蓝3/4k1",
+  "password": "",
+  "page": 1,
+  "per_page": 25,
+  "refresh": false
+}
 
 ###
 
@@ -53,13 +22,9 @@ Content-Type: application/json
 
 ###
 
-POST  http://localhost:5244/api/admin/task/upload/info
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzA2NjgxODM2LCJuYmYiOjE3MDY1MDkwMzYsImlhdCI6MTcwNjUwOTAzNn0.xvsQqrGzFQpy5MM4Rc7_rZKb1gPLR8CbaRl5XdwTMRI
+GET  http://localhost/api/v1/search_node?s=大江大河
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzA2ODYyMTExLCJuYmYiOjE3MDY2ODkzMTEsImlhdCI6MTcwNjY4OTMxMX0._1AVt4XL2Ot-thCLP-t7pDiPxbsIMsPhXWRq_W8HO00
 Content-Type: application/json;charset=UTF-8
 
 {
-  "paths": [
-    "/"
-  ],
-  "max_depth": -1
 }

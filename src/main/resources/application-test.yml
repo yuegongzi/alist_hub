@@ -3,7 +3,7 @@ spring:
     url: jdbc:sqlite:/opt/alist/data/data.db
     driver-class-name: org.sqlite.JDBC
   jpa:
-    show-sql: false
+    show-sql: true
 
 alist:
   hub:
