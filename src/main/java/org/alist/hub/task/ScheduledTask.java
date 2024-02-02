@@ -43,7 +43,7 @@ public class ScheduledTask {
         }
     }
 
-    @Scheduled(cron = "0 32 11,23 * * ?")
+    @Scheduled(cron = "0 18 06 * * ?")
     public void build() {
         searchNodeService.build();
     }
