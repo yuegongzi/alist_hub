@@ -21,7 +21,7 @@ public class FileItem {
 
     private String name;
 
-    private int size;
+    private long size;
 
     @JsonProperty("file_extension")
     private String fileExtension;
