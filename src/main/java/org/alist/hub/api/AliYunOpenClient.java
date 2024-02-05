@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -92,19 +93,20 @@ public class AliYunOpenClient {
      * 创建文件
      *
      * @param name           文件名
-     * @param type           文件类型
+     * @param type          类型 backup | resource
      * @param parent_file_id 父文件ID
      * @return 返回一个Mono类型的文件信息
      */
-    public Optional<FileInfo> createFile(String name, String type, String parent_file_id) {
+    public Optional<FileInfo> createFolder(String name, String type, String parent_file_id) {
         Optional<DriveInfo> driveInfo = getDriveInfo();
         if (driveInfo.isPresent()) {
+            String driverId = Objects.equals(type, "backup") ? driveInfo.get().getBackupDriveId() : driveInfo.get().getResourceDriveId();
             Response response = http.post(createPayload("/adrive/v1.0/openFile/create")
                     .addBody("check_name_mode", "refuse")
-                    .addBody("type", type)
+                    .addBody("type", "folder")
                     .addBody("parent_file_id",
                             StringUtils.hasText(parent_file_id) ? parent_file_id : "root")
-                    .addBody("drive_id", driveInfo.get().getResourceDriveId())
+                    .addBody("drive_id", driverId)
                     .addBody("name", name));
             return response.asValue(FileInfo.class);
         }

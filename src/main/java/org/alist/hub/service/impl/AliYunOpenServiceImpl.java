@@ -48,7 +48,7 @@ public class AliYunOpenServiceImpl implements AliYunOpenService {
             aliYunOpenBO.setExpiresIn(aliYunOpenBO.getExpiresIn() * 900 + System.currentTimeMillis());//少存一点时间
             appConfigService.saveOrUpdate(aliYunOpenBO);
             // 在根目录创建文件夹
-            Optional<FileInfo> fileInfo = aliYunOpenClient.createFile(Constants.FILE_NAME, "folder", "root");
+            Optional<FileInfo> fileInfo = aliYunOpenClient.createFolder(Constants.FILE_NAME, "resource", "root");
             // 检查文件夹创建是否成功
             if (fileInfo.isEmpty()) {
                 throw new ServiceException("创建文件夹失败");

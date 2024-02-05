@@ -14,6 +14,6 @@ public interface SearchNodeRepository extends CrudRepository<SearchNode, Long>, 
 
     int deleteByType(Integer type);
 
-    @Query("SELECT e FROM SearchNode e WHERE (:keyword IS NULL OR (e.name LIKE CONCAT('%', :keyword, '%') OR e.parent LIKE CONCAT('%', :keyword, '%') ))")
+    @Query("SELECT e FROM SearchNode e WHERE (:keyword IS NULL OR e.name LIKE CONCAT('%', :keyword, '%' ))")
     Page<SearchNode> findAllByKeyword(String keyword, Pageable pageable);
 }

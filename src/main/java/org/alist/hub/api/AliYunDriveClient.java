@@ -3,6 +3,10 @@ package org.alist.hub.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.alist.hub.bean.AliYunDriveShareResp;
+import org.alist.hub.bean.Constants;
+import org.alist.hub.bean.ExpiringMap;
+import org.alist.hub.bean.FileWatcher;
 import org.alist.hub.bean.Response;
 import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.bo.Persistent;
@@ -11,9 +15,13 @@ import org.alist.hub.model.AppConfig;
 import org.alist.hub.repository.AppConfigRepository;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.utils.StringUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -23,6 +31,7 @@ public class AliYunDriveClient {
     private final Http http;
     private final AppConfigRepository appConfigRepository;
     private final AppConfigService appConfigService;
+    private final static ExpiringMap<String, String> expiringMap = new ExpiringMap<>();
 
     private String refreshToken(AliYunDriveBO aliYunDriveBO) {
         // 发送HTTP请求获取新的token
@@ -61,7 +70,79 @@ public class AliYunDriveClient {
 
     public JsonNode sign() {
         Payload payload = Payload.create("https://member.aliyundrive.com/v1/activity/sign_in_list")
-                .addHeader("Authorization", "Bearer " + getAccessToken());
+                .addHeader("Authorization", "Bearer " + getAccessToken())
+                .addHeader("user-agent", Constants.USER_AGENT);
         return http.post(payload).asJsonNode().findValue("result");
+    }
+
+    /**
+     * 获取分享链接的token
+     *
+     * @param shareId  分享ID
+     * @param sharePwd 分享密码
+     * @return 可选的分享链接token
+     */
+    public Optional<String> getShareToken(String shareId, String sharePwd) {
+        String shareToken = expiringMap.get(shareId);
+        if (StringUtils.hasText(shareToken)) {
+            return Optional.of(shareToken);
+        }
+        Payload payload = Payload.create("https://api.aliyundrive.com/v2/share_link/get_share_token");
+        payload.addHeader("user-agent", Constants.USER_AGENT);
+        payload.addBody("share_id", shareId);
+        payload.addBody("share_pwd", sharePwd);
+        Response response = http.post(payload);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            shareToken = response.asJsonNode().findValue("share_token").asText();
+            expiringMap.put(shareId, shareToken, 7000 * 1000);
+            return Optional.of(shareToken);
+        }
+        return Optional.empty();
+    }
+
+    public List<AliYunDriveShareResp.ShareFile> getShareList(String shareId, String sharePwd, String parentFileId) {
+        Optional<String> shareToken = getShareToken(shareId, sharePwd);
+        if (shareToken.isEmpty()) {
+            throw new ServiceException("获取分享链接失败");
+        }
+        Payload payload = Payload.create("https://api.aliyundrive.com/adrive/v2/file/list_by_share");
+        payload.addHeader("user-agent", Constants.USER_AGENT)
+                .addHeader("x-share-token", shareToken.get())
+                .addBody("parent_file_id", parentFileId)
+                .addBody("share_id", shareId)
+                .addBody("limit", 100);
+        Response response = http.post(payload);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            return response.asValue(AliYunDriveShareResp.class).map(AliYunDriveShareResp::getItems).orElse(new ArrayList<>());
+        }
+        return new ArrayList<>();
+    }
+
+    public boolean copy(FileWatcher fileWatcher, String shareId, String sharePwd, List<String> fileIds) {
+        List<Map<String, Object>> requests = new ArrayList<>();
+        for (int i = 0; i < fileIds.size(); i++) {
+            Map<String, Object> content = new HashMap<>();
+            Map<String, Object> body = new HashMap<>();
+            Map<String, Object> headers = new HashMap<>();
+            body.put("file_id", fileIds.get(i));
+            body.put("share_id", shareId);
+            body.put("auto_rename", true);
+            body.put("to_parent_file_id", fileWatcher.getToFileId());
+            body.put("to_drive_id", fileWatcher.getToDriveId());
+            headers.put("Content-Type", "application/json");
+            content.put("id", String.format("%s", i++));
+            content.put("method", "POST");
+            content.put("url", "/file/copy");
+            content.put("body", body);
+            content.put("headers", headers);
+            requests.add(content);
+        }
+        Payload payload = Payload.create("https://api.aliyundrive.com/adrive/v4/batch")
+                .addHeader("user-agent", Constants.USER_AGENT)
+                .addHeader("x-share-token", getShareToken(shareId, sharePwd).get())
+                .addHeader("Authorization", "Bearer " + getAccessToken())
+                .addBody("requests", requests)
+                .addBody("resource", "file");
+        return http.post(payload).getStatusCode().is2xxSuccessful();
     }
 }

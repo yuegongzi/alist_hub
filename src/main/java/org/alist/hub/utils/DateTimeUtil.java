@@ -9,11 +9,7 @@ import java.time.format.DateTimeFormatter;
 public class DateTimeUtil {
 
     public static final String PATTERN_DATETIME = "yyyy-MM-dd HH:mm:ss";
-    public static final String PATTERN_DATE = "yyyy-MM-dd";
-    public static final String PATTERN_TIME = "HH:mm:ss";
     public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DateTimeUtil.PATTERN_DATETIME);
-    public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(DateTimeUtil.PATTERN_DATE);
-    public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(DateTimeUtil.PATTERN_TIME);
 
 
     /**
@@ -59,6 +55,5 @@ public class DateTimeUtil {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
         return LocalDateTime.parse(datetimeStr, formatter);
     }
-
 
 }

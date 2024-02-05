@@ -5,11 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.api.AliYunDriveClient;
 import org.alist.hub.api.AliYunOpenClient;
+import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileItem;
 import org.alist.hub.bo.AliYunFolderBO;
 import org.alist.hub.bo.AliYunSignBO;
+import org.alist.hub.model.AppConfig;
+import org.alist.hub.repository.AppConfigRepository;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
+import org.alist.hub.service.FileWatcherService;
 import org.alist.hub.service.SearchNodeService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -27,6 +31,8 @@ public class ScheduledTask {
     private final AListService aListService;
     private final AliYunOpenClient aliYunOpenClient;
     private final SearchNodeService searchNodeService;
+    private final AppConfigRepository appConfigRepository;
+    private final FileWatcherService fileWatcherService;
 
     @Scheduled(cron = "0 17 9 * * ?")
     public void sign() {
@@ -70,6 +76,14 @@ public class ScheduledTask {
                     log.error("delete file failure", e);
                 }
             });
+        });
+    }
+
+    @Scheduled(initialDelay = 60 * 60 * 1000, fixedRate = 60 * 60 * 1000)
+    public void copy() {
+        List<AppConfig> appConfigs = appConfigRepository.findAllByGroup(Constants.WATCHER_GROUP);
+        appConfigs.forEach(appConfig -> {
+            fileWatcherService.merge(appConfig.getId());
         });
     }
 }
