@@ -83,6 +83,7 @@ public class SearchNodeServiceImpl implements SearchNodeService {
     }
 
     @Override
+    @Transactional
     public void update() {
         movieRepository.deleteAll();
         searchNodeRepository.deleteByType(1);

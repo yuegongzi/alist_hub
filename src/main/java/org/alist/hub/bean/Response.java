@@ -6,6 +6,7 @@ import org.alist.hub.utils.JsonUtil;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -32,7 +33,15 @@ public class Response {
         return JsonUtil.readTree(this.getBody());
     }
 
+    public <T> Optional<T> asValue(Class<T> classValue, String path) {
+        return JsonUtil.readValue(this.getBody(), classValue, path);
+    }
+
     public <T> Optional<T> asValue(Class<T> classValue) {
         return JsonUtil.readValue(this.getBody(), classValue);
+    }
+
+    public <T> List<T> asList(Class<T> classValue, String path) {
+        return JsonUtil.readTreeValue(this.getBody(), classValue, path);
     }
 }

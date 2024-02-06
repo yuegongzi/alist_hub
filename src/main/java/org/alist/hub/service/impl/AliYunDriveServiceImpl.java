@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import org.alist.hub.api.Http;
 import org.alist.hub.api.Payload;
-import org.alist.hub.bean.AliYunDriveResp;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.Response;
 import org.alist.hub.bo.AliYunDriveBO;
@@ -51,19 +50,16 @@ public class AliYunDriveServiceImpl implements AliYunDriveService {
         String json = new String(bytes, StandardCharsets.UTF_8);
 
         // 将JSON字符串解析为AliYunDriveResp对象，判断是否解析成功
-        Optional<AliYunDriveResp> resp = JsonUtil.readValue(json, AliYunDriveResp.class);
+        Optional<AliYunDriveBO> resp = JsonUtil.readValue(json, AliYunDriveBO.class, "pds_login_result");
         if (resp.isEmpty()) {
             throw new ServiceException("解析数据失败");
         }
 
-        // 获取解析后的对象中的结果对象
-        AliYunDriveBO aliYunDriveBO = resp.get().getResult();
-
         // 更新ExpiresIn字段的值
-        aliYunDriveBO.setExpiresIn(System.currentTimeMillis() + (aliYunDriveBO.getExpiresIn() - 300) * 1000);
+        resp.get().setExpiresIn(System.currentTimeMillis() + (resp.get().getExpiresIn() - 300) * 1000);
 
         // 保存或更新aliYunDriveBO对象，抛出异常如果保存失败
-        appConfigService.saveOrUpdate(aliYunDriveBO);
+        appConfigService.saveOrUpdate(resp.get());
         return "CONFIRMED";
     }
 

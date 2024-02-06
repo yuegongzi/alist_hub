@@ -138,7 +138,7 @@ public class AListClient {
                         .addBody("per_page", 50))
                 .asJsonNode();
         if (jsonNode.findValue("code").asInt() == 200) {
-            Optional<FileSystemResp> resp = JsonUtil.jsonNodeToObject(jsonNode.findValue("data"), FileSystemResp.class);
+            Optional<FileSystemResp> resp = JsonUtil.toPojo(jsonNode.findValue("data"), FileSystemResp.class);
             resp.ifPresent(r -> {
                 if (r.getContent() != null) {
                     list.addAll(r.getContent());

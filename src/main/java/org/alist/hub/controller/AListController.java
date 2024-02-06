@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.service.AListService;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +23,13 @@ public class AListController {
     @PostMapping("/stop")
     public boolean stop() {
         return aListService.stopAList();
+    }
+
+    @PutMapping()
+    public void update() {
+        aListService.checkUpdate();
+        //强制更新
+        aListService.update();
     }
 
 }

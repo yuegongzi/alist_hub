@@ -16,6 +16,13 @@ public class StringUtils extends org.springframework.util.StringUtils {
         return true;
     }
 
+    /**
+     * 比较两个版本号的大小
+     *
+     * @param version1 版本号1
+     * @param version2 版本号2
+     * @return 如果version1小于version2，返回-1；如果version1大于version2，返回1；如果版本号相等，返回0
+     */
     public static int compareVersions(String version1, String version2) {
         String[] v1Parts = version1.split("\\.");
         String[] v2Parts = version2.split("\\.");
@@ -70,6 +77,12 @@ public class StringUtils extends org.springframework.util.StringUtils {
         }
     }
 
+    /**
+     * 将路径字符串分割成路径和文件名
+     *
+     * @param path 路径字符串
+     * @return 包含路径和文件名的 PathInfo 对象
+     */
     public static PathInfo splitPath(String path) {
         String[] parts = path.split("/");
 
@@ -137,6 +150,12 @@ public class StringUtils extends org.springframework.util.StringUtils {
         }
     }
 
+    /**
+     * 判断一个字符串是否为整数
+     *
+     * @param str 待判断的字符串
+     * @return 如果是整数，返回true；否则返回false
+     */
     public static boolean isInteger(String str) {
         try {
             // 尝试将字符串转换为整数

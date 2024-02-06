@@ -3,11 +3,11 @@ package org.alist.hub.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.alist.hub.bean.AliYunDriveShareResp;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.ExpiringMap;
 import org.alist.hub.bean.FileWatcher;
 import org.alist.hub.bean.Response;
+import org.alist.hub.bean.ShareFile;
 import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.bo.Persistent;
 import org.alist.hub.exception.ServiceException;
@@ -100,7 +100,7 @@ public class AliYunDriveClient {
         return Optional.empty();
     }
 
-    public List<AliYunDriveShareResp.ShareFile> getShareList(String shareId, String sharePwd, String parentFileId) {
+    public List<ShareFile> getShareList(String shareId, String sharePwd, String parentFileId) {
         Optional<String> shareToken = getShareToken(shareId, sharePwd);
         if (shareToken.isEmpty()) {
             throw new ServiceException("获取分享链接失败");
@@ -113,7 +113,7 @@ public class AliYunDriveClient {
                 .addBody("limit", 100);
         Response response = http.post(payload);
         if (response.getStatusCode().is2xxSuccessful()) {
-            return response.asValue(AliYunDriveShareResp.class).map(AliYunDriveShareResp::getItems).orElse(new ArrayList<>());
+            return response.asList(ShareFile.class, "items");
         }
         return new ArrayList<>();
     }

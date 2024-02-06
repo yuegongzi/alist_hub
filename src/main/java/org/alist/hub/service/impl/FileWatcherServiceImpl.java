@@ -3,11 +3,11 @@ package org.alist.hub.service.impl;
 import lombok.AllArgsConstructor;
 import org.alist.hub.api.AliYunDriveClient;
 import org.alist.hub.api.AliYunOpenClient;
-import org.alist.hub.bean.AliYunDriveShareResp;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileInfo;
 import org.alist.hub.bean.FileItem;
 import org.alist.hub.bean.FileWatcher;
+import org.alist.hub.bean.ShareFile;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.AppConfig;
 import org.alist.hub.model.Storage;
@@ -60,9 +60,9 @@ public class FileWatcherServiceImpl implements FileWatcherService {
         // 遍历路径数组
         for (String p : paths) {
             // 调用阿里云客户端获取共享文件列表
-            List<AliYunDriveShareResp.ShareFile> shareFiles = aliYunDriveClient.getShareList(s.getAddition().get("share_id").toString(), s.getAddition().get("share_pwd").toString(), fileWatcher.getParentFileId());
+            List<ShareFile> shareFiles = aliYunDriveClient.getShareList(s.getAddition().get("share_id").toString(), s.getAddition().get("share_pwd").toString(), fileWatcher.getParentFileId());
             // 遍历共享文件列表
-            for (AliYunDriveShareResp.ShareFile file : shareFiles) {
+            for (ShareFile file : shareFiles) {
                 // 如果文件名和类型匹配，则更新FileWatcher对象的参数
                 if (file.getName().equals(p) && file.getType().equals("folder")) {
                     fileWatcher.setDriveId(file.getDriveId());
@@ -119,10 +119,10 @@ public class FileWatcherServiceImpl implements FileWatcherService {
         // 获取指定驱动器中的文件列表
         List<FileItem> fileItems = aliYunOpenClient.getFileList(fileWatcher.getToDriveId(), fileWatcher.getToFileId());
         // 获取指定分享列表中的文件列表
-        List<AliYunDriveShareResp.ShareFile> shareFiles = aliYunDriveClient.getShareList(s.getAddition().get("share_id").toString(), s.getAddition().get("share_pwd").toString(), fileWatcher.getParentFileId());
+        List<ShareFile> shareFiles = aliYunDriveClient.getShareList(s.getAddition().get("share_id").toString(), s.getAddition().get("share_pwd").toString(), fileWatcher.getParentFileId());
         // 获取需要复制的文件列表
         List<String> array = new ArrayList<>();
-        for (AliYunDriveShareResp.ShareFile file : shareFiles) {
+        for (ShareFile file : shareFiles) {
             // 在文件列表中查找名称匹配的文件
             Optional<String> matchingFileId = fileItems.stream()
                     .filter(item -> item.getName().equals(file.getName()))

@@ -12,7 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -53,6 +55,13 @@ public class JsonUtil {
         jsonMapper.registerModule(new JavaTimeModule());
     }
 
+    /**
+     * 读取JSON字符串并返回对应的JsonNode对象
+     *
+     * @param json JSON字符串
+     * @return JsonNode对象
+     * @throws RuntimeException JSON解析失败时抛出异常
+     */
     public static JsonNode readTree(String json) {
         try {
             return jsonMapper.readTree(json);
@@ -62,6 +71,13 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * 将指定对象转换为JSON字符串
+     *
+     * @param object 要转换的对象
+     * @param <T>    对象的类型
+     * @return 转换后的JSON字符串
+     */
     public static <T> String toJson(T object) {
         try {
             return jsonMapper.writeValueAsString(object);
@@ -71,6 +87,14 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * 从JSON字符串中读取指定类型的值
+     *
+     * @param json      JSON字符串
+     * @param valueType 指定的类型
+     * @param <T>       指定的类型
+     * @return 读取到的值的Optional对象
+     */
     public static <T> Optional<T> readValue(String json, Class<T> valueType) {
         try {
             return Optional.of(jsonMapper.readValue(json, valueType));
@@ -80,6 +104,22 @@ public class JsonUtil {
         }
     }
 
+    public static <T> Optional<T> readValue(String json, Class<T> classValue, String path) {
+        JsonNode jsonNode = readTree(json);
+        Optional<JsonNode> value = getNodeByPath(jsonNode, path);
+        if (value.isPresent()) {
+            return toPojo(value.get(), classValue);
+        }
+        return Optional.empty();
+    }
+
+
+    /**
+     * 将JSON字符串转换为Map对象
+     *
+     * @param json JSON字符串
+     * @return 转换后的Map对象
+     */
     public static Map<String, Object> toMap(String json) {
         try {
             return jsonMapper.readValue(json, new TypeReference<>() {
@@ -127,6 +167,37 @@ public class JsonUtil {
     }
 
     /**
+     * 从JSON字符串中读取指定路径的值，并将其转换为指定类型的列表
+     *
+     * @param json  JSON字符串
+     * @param clazz 指定的类型
+     * @param path  要读取的路径
+     * @param <T>   指定的类型
+     * @return 读取到的值的列表
+     */
+    public static <T> List<T> readTreeValue(String json, Class<T> clazz, String path) {
+        JsonNode jsonNode = readTree(json);
+        Optional<JsonNode> value = getNodeByPath(jsonNode, path);
+        if (value.isPresent()) {
+            List<T> resultList = new ArrayList<>();
+            if (jsonNode.isArray()) {
+                Iterator<JsonNode> elements = jsonNode.elements();
+                while (elements.hasNext()) {
+                    JsonNode element = elements.next();
+                    try {
+                        T obj = jsonMapper.treeToValue(element, clazz);
+                        resultList.add(obj);
+                    } catch (JsonProcessingException e) {
+                        log.error("Failed to convert JsonNode to object of type '{}': {}", clazz.getName(), e.getMessage(), e);
+                    }
+                }
+            }
+            return resultList;
+        }
+        return new ArrayList<>();
+    }
+
+    /**
      * 将JsonNode转换为指定类型的实例对象
      *
      * @param node  JsonNode对象
@@ -134,7 +205,7 @@ public class JsonUtil {
      * @param <T>   目标对象的类型
      * @return 目标对象的Optional实例，如果转换失败则返回空Optional
      */
-    public static <T> Optional<T> jsonNodeToObject(JsonNode node, Class<T> clazz) {
+    public static <T> Optional<T> toPojo(JsonNode node, Class<T> clazz) {
         try {
             return Optional.of(jsonMapper.treeToValue(node, clazz));
         } catch (JsonProcessingException e) {
@@ -142,4 +213,6 @@ public class JsonUtil {
             return Optional.empty();
         }
     }
+
+
 }

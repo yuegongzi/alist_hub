@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.alist.hub.api.AliYunDriveClient;
+import org.alist.hub.api.AliYunOpenClient;
+import org.alist.hub.bean.DriveInfo;
+import org.alist.hub.bean.SpaceInfo;
 import org.alist.hub.bean.UserClaims;
 import org.alist.hub.bo.AliYunSignBO;
 import org.alist.hub.dto.PasswordDTO;
@@ -18,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -26,6 +31,7 @@ import java.util.Optional;
 public class UserController {
     private final UserRepository userRepository;
     private final AliYunDriveClient aliYunDriveClient;
+    private final AliYunOpenClient aliYunOpenClient;
     private final AppConfigService appConfigService;
 
     @PutMapping("/password")
@@ -60,5 +66,19 @@ public class UserController {
             return jsonNode;
         }
         return optional.get().getResult();
+    }
+
+    @GetMapping()
+    public Map<String, Object> aliyunDrive() {
+        Map<String, Object> map = new HashMap<>();
+        Optional<DriveInfo> driveInfo = aliYunOpenClient.getDriveInfo();
+        Optional<SpaceInfo> spaceInfo = aliYunOpenClient.getSpaceInfo();
+        driveInfo.ifPresent(d -> {
+            map.put("driveInfo", driveInfo.get());
+        });
+        spaceInfo.ifPresent(d -> {
+            map.put("spaceInfo", spaceInfo.get());
+        });
+        return map;
     }
 }
