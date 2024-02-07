@@ -12,7 +12,7 @@ public enum ResultCode {
     FAILURE(HttpServletResponse.SC_BAD_REQUEST, "业务异常"),
     UN_AUTHORIZED(HttpServletResponse.SC_UNAUTHORIZED, "请求未授权"),
     CLIENT_UN_AUTHORIZED(HttpServletResponse.SC_UNAUTHORIZED, "客户端请求未授权"),
-    NOT_FOUND(HttpServletResponse.SC_NOT_FOUND, "404 没找到请求"),
+    NOT_FOUND(HttpServletResponse.SC_NOT_FOUND, "没找到请求资源"),
     MSG_NOT_READABLE(HttpServletResponse.SC_BAD_REQUEST, "消息不能读取"),
     METHOD_NOT_SUPPORTED(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "不支持当前请求方法"),
     MEDIA_TYPE_NOT_SUPPORTED(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, "不支持当前媒体类型"),

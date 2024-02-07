@@ -1,9 +1,9 @@
-package org.alist.hub.configure;
+package org.alist.hub.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.alist.hub.bean.UserClaims;
-import org.alist.hub.utils.JwtUtil;
+import org.alist.hub.util.JwtUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -34,7 +34,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
     }
 
     private boolean isValidAuthorization(String authorizationHeader) {
-        Optional<UserClaims> userClaims = JwtUtil.decodeJwt(authorizationHeader);
+        Optional<UserClaims> userClaims = JwtUtils.decodeJwt(authorizationHeader);
         return userClaims.map(claims -> !claims.isExpired()).orElseGet(() -> false);
     }
 

@@ -10,7 +10,7 @@ import org.alist.hub.model.Storage;
 import org.alist.hub.repository.AppConfigRepository;
 import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.service.FileWatcherService;
-import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.util.JsonUtils;
 import org.alist.hub.vo.FileWatcherVO;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,7 +51,7 @@ public class FileWatcherController {
         List<FileWatcherVO> list = new ArrayList<>();
         appConfigs.forEach(appConfig -> {
             FileWatcherVO fileWatcherVO = new FileWatcherVO();
-            Optional<FileWatcher> watcher = JsonUtil.readValue(appConfig.getValue(), FileWatcher.class);
+            Optional<FileWatcher> watcher = JsonUtils.readValue(appConfig.getValue(), FileWatcher.class);
             if (watcher.isPresent()) {
                 fileWatcherVO.setFolderName(watcher.get().getFolderName());
                 fileWatcherVO.setId(appConfig.getId());

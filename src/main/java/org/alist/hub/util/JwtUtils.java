@@ -1,11 +1,11 @@
-package org.alist.hub.utils;
+package org.alist.hub.util;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.UserClaims;
 import org.alist.hub.configure.HubProperties;
-import org.alist.hub.provider.ApplicationContextProvider;
+import org.alist.hub.context.ApplicationContextProvider;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -20,7 +20,7 @@ import java.util.Base64;
 import java.util.Optional;
 
 @Slf4j
-public class JwtUtil {
+public class JwtUtils {
     private static String JWT_SECRET = null;
 
 
@@ -34,7 +34,7 @@ public class JwtUtil {
         if (JWT_SECRET == null) {
             HubProperties hubProperties = ApplicationContextProvider.getHubProperties();
             String config = Files.readString(Path.of(hubProperties.getPath() + "/config.json"));
-            JsonNode jsonNode = JsonUtil.readTree(config);
+            JsonNode jsonNode = JsonUtils.readTree(config);
             JWT_SECRET = jsonNode.findValue("jwt_secret").asText();
         }
         return JWT_SECRET;
@@ -83,7 +83,7 @@ public class JwtUtil {
             String[] chunks = token.split("\\.");
             String result = calculateHmac(chunks[0] + "." + chunks[1], getSecretKey());
             if (result.equals(chunks[2])) {  // 加密结果匹配
-                return JsonUtil.readValue(base64UrlDecode(chunks[1]), UserClaims.class);  // 解析JSON并返回UserClaims对象
+                return JsonUtils.readValue(base64UrlDecode(chunks[1]), UserClaims.class);  // 解析JSON并返回UserClaims对象
             }
         } catch (Exception e) {
             log.error("无法验证JWT令牌的完整性！", e);

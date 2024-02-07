@@ -1,8 +1,8 @@
-package org.alist.hub.utils;
+package org.alist.hub.util;
 
 import java.security.SecureRandom;
 
-public class RandomUtil {
+public class RandomUtils {
 
     private static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private static final SecureRandom secureRandom = new SecureRandom();

@@ -1,4 +1,4 @@
-package org.alist.hub.api;
+package org.alist.hub.external;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,11 +10,13 @@ import org.alist.hub.bean.Response;
 import org.alist.hub.bean.SpaceInfo;
 import org.alist.hub.bo.AliYunOpenBO;
 import org.alist.hub.bo.Persistent;
+import org.alist.hub.client.Http;
+import org.alist.hub.client.Payload;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.AppConfig;
 import org.alist.hub.repository.AppConfigRepository;
 import org.alist.hub.service.AppConfigService;
-import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.util.JsonUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -64,7 +66,7 @@ public class AliYunOpenClient {
         if (appConfig.isEmpty()) {  // 如果App配置为空
             throw new ServiceException("获取token失败");
         }
-        Optional<AliYunOpenBO> aliyunOpenBO = JsonUtil.readValue(appConfig.get().getValue(), AliYunOpenBO.class);
+        Optional<AliYunOpenBO> aliyunOpenBO = JsonUtils.readValue(appConfig.get().getValue(), AliYunOpenBO.class);
         if (aliyunOpenBO.isEmpty()) {  // 如果AliyunOpenBO对象为空
             throw new ServiceException("获取token失败");
         }
@@ -83,13 +85,25 @@ public class AliYunOpenClient {
     }
 
 
+    /**
+     * 获取用户驱动信息
+     *
+     * @return 用户驱动信息
+     */
     public Optional<DriveInfo> getDriveInfo() {
         return http.post(createPayload("/adrive/v1.0/user/getDriveInfo")).asValue(DriveInfo.class);
     }
 
+
+    /**
+     * 获取空间信息
+     *
+     * @return 空间信息
+     */
     public Optional<SpaceInfo> getSpaceInfo() {
         return http.post(createPayload("/adrive/v1.0/user/getSpaceInfo")).asValue(SpaceInfo.class, "personal_space_info");
     }
+
 
     /**
      * 创建文件
@@ -115,16 +129,31 @@ public class AliYunOpenClient {
         return Optional.empty();
     }
 
+    /**
+     * 获取文件列表
+     *
+     * @param driveId      驱动ID
+     * @param parentFileId 父文件ID
+     * @return 文件列表
+     */
     public List<FileItem> getFileList(String driveId, String parentFileId) {
         return http.post(createPayload("/adrive/v1.0/openFile/list")
                 .addBody("drive_id", driveId)
                 .addBody("parent_file_id", parentFileId)).asList(FileItem.class, "items");
     }
 
-    //文件删除
+
+    /**
+     * 删除文件
+     *
+     * @param driveId 驱动ID
+     * @param fileId 文件ID
+     * @return 删除是否成功
+     */
     public boolean deleteFile(String driveId, String fileId) {
         return http.post(createPayload("/adrive/v1.0/openFile/delete")
                 .addBody("drive_id", driveId)
                 .addBody("file_id", fileId)).getStatusCode().is2xxSuccessful();
     }
+
 }

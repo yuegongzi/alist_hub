@@ -1,4 +1,4 @@
-package org.alist.hub.utils;
+package org.alist.hub.util;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
  * AList基本命令 用于启动和停止服务
  */
 @Slf4j
-public class CommandUtil {
+public class CommandUtils {
     /**
      * 执行外部进程并等待其完成
      *

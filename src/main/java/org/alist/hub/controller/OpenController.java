@@ -5,10 +5,10 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.alist.hub.api.Http;
-import org.alist.hub.api.Payload;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.Response;
+import org.alist.hub.client.Http;
+import org.alist.hub.client.Payload;
 import org.alist.hub.dto.InitializeDTO;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.User;
@@ -49,7 +49,7 @@ public class OpenController {
      * @return JsonNode类型的返回结果
      */
     @GetMapping("/aliyun/drive/qr")
-    public JsonNode drive_qr() {
+    public JsonNode getDriveQR() {
         Response response = http.get(Payload.create(Constants.API_DOMAIN + "/alist/ali/qr"));
         JsonNode jsonNode = response.asJsonNode();
         if (jsonNode.findValue("hasError").asBoolean()) {
@@ -64,7 +64,7 @@ public class OpenController {
      * @param body 请求体参数
      */
     @PostMapping("/aliyun/drive/qr")
-    public String drive_qr_auth(@RequestBody Map<String, Object> body) {
+    public String authDriveQR(@RequestBody Map<String, Object> body) {
         if (appConfigService.isInitialized()) {
             throw new ServiceException("已经初始化过");
         }
@@ -79,7 +79,7 @@ public class OpenController {
      * @return 授权二维码的URL
      */
     @GetMapping("/aliyun/openapi/qr")
-    public String openapi_qr() {
+    public String getOpenapiQR() {
         Response response = http.post(Payload.create(Constants.API_DOMAIN + "/alist/ali_open/qr"));
         JsonNode jsonNode = response.asJsonNode();
         String qr = jsonNode.findValue("qrCodeUrl").asText("");
@@ -95,7 +95,7 @@ public class OpenController {
      * @param body 请求参数，包含url字段表示请求的url
      */
     @PostMapping("/aliyun/openapi/qr")
-    public void openapi_qr_auth(@RequestBody Map<String, String> body) {
+    public void authOpenapiQR(@RequestBody Map<String, String> body) {
         if (appConfigService.isInitialized()) {
             throw new ServiceException("已经初始化过");
         }

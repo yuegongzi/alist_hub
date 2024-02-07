@@ -3,10 +3,10 @@ package org.alist.hub.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.alist.hub.api.AListClient;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileSystem;
 import org.alist.hub.bean.PathInfo;
+import org.alist.hub.external.AListClient;
 import org.alist.hub.model.Movie;
 import org.alist.hub.model.SearchNode;
 import org.alist.hub.model.Storage;
@@ -14,7 +14,7 @@ import org.alist.hub.repository.MovieRepository;
 import org.alist.hub.repository.SearchNodeRepository;
 import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.service.SearchNodeService;
-import org.alist.hub.utils.StringUtils;
+import org.alist.hub.util.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -147,8 +147,8 @@ public class SearchNodeServiceImpl implements SearchNodeService {
         searchNode.setDir(!content.contains("."));
         searchNode.setType(1);
         searchNode.setSize(0L);
-        searchNode.setParent(pathInfo.getPath());
-        searchNode.setName(pathInfo.getName());
+        searchNode.setParent(pathInfo.path());
+        searchNode.setName(pathInfo.name());
         searchNodeList.add(searchNode);
     }
 

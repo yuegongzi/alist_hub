@@ -3,20 +3,20 @@ package org.alist.hub.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.alist.hub.api.AListClient;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.bo.AliYunFolderBO;
 import org.alist.hub.bo.AliYunOpenBO;
 import org.alist.hub.bo.PikPakBo;
 import org.alist.hub.exception.ServiceException;
+import org.alist.hub.external.AListClient;
 import org.alist.hub.model.Meta;
 import org.alist.hub.model.Storage;
 import org.alist.hub.repository.MetaRepository;
 import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.StorageService;
-import org.alist.hub.utils.StringUtils;
+import org.alist.hub.util.StringUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
@@ -211,43 +211,60 @@ public class StorageServiceImpl implements StorageService {
     }
 
 
+    /**
+     * 刷新存储信息。
+     *
+     * @param storage 需要刷新的存储对象
+     */
     @Override
     public void flush(Storage storage) {
+        // 获取阿里云开放平台基本信息
         Optional<AliYunOpenBO> aliYunOpenBO = appConfigService.get(new AliYunOpenBO(), AliYunOpenBO.class);
+
         switch (storage.getDriver()) {
             case "PikPakShare":
+                // 获取PikPakBo配置信息
                 Optional<PikPakBo> pikPakBo = appConfigService.get(new PikPakBo(), PikPakBo.class);
                 if (pikPakBo.isPresent()) {
+                    // 更新存储附加信息，添加PikPakBo中的用户名和密码
                     Map<String, Object> ad1 = new HashMap<>(storage.getAddition());
                     ad1.put("username", pikPakBo.get().getUsername());
                     ad1.put("password", pikPakBo.get().getPassword());
                     storage.setAddition(ad1);
+                    // 将更新后的存储信息保存或更新到aListClient
                     aListClient.addOrUpdate(storage);
                 }
                 break;
             case "AliyundriveShare2Open":
+                // 获取阿里云盘相关配置信息
                 Optional<AliYunDriveBO> aliYunDriveBO = appConfigService.get(new AliYunDriveBO(), AliYunDriveBO.class);
                 Optional<AliYunFolderBO> aliYunFolderBO = appConfigService.get(new AliYunFolderBO(), AliYunFolderBO.class);
                 if (aliYunOpenBO.isPresent() && aliYunDriveBO.isPresent() && aliYunFolderBO.isPresent()) {
+                    // 更新存储附加信息，添加阿里云盘的RefreshToken、开放平台RefreshToken及临时传输文件夹ID
                     Map<String, Object> ad2 = new HashMap<>(storage.getAddition());
                     ad2.put("RefreshToken", aliYunDriveBO.get().getRefreshToken());
                     ad2.put("RefreshTokenOpen", aliYunOpenBO.get().getRefreshToken());
                     ad2.put("TempTransferFolderID", aliYunFolderBO.get().getFolderId());
                     ad2.put("rorb", "r");
                     storage.setAddition(ad2);
+                    // 将更新后的存储信息保存或更新到aListClient
                     aListClient.addOrUpdate(storage);
                 }
                 break;
             case "AliyundriveOpen":
                 if (aliYunOpenBO.isPresent()) {
+                    // 更新存储附加信息，添加阿里云开放平台的AccessToken和RefreshToken
                     Map<String, Object> ad3 = new HashMap<>(storage.getAddition());
                     ad3.put("AccessToken", aliYunOpenBO.get().getAccessToken());
                     ad3.put("refresh_token", aliYunOpenBO.get().getRefreshToken());
                     storage.setAddition(ad3);
+                    // 将更新后的存储信息保存或更新到aListClient
                     aListClient.addOrUpdate(storage);
                 }
             default:
+                // 若未匹配到特定驱动类型，直接将存储信息保存或更新到aListClient
                 aListClient.addOrUpdate(storage);
         }
     }
+
 }

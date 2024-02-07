@@ -3,7 +3,7 @@ package org.alist.hub.model;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.util.JsonUtils;
 
 import java.util.Map;
 
@@ -12,11 +12,11 @@ public class JsonConverter implements AttributeConverter<Map<String, Object>, St
 
     @Override
     public String convertToDatabaseColumn(Map<String, Object> attribute) {
-        return JsonUtil.toJson(attribute);
+        return JsonUtils.toJson(attribute);
     }
 
     @Override
     public Map<String, Object> convertToEntityAttribute(String dbData) {
-        return JsonUtil.toMap(dbData);
+        return JsonUtils.toMap(dbData);
     }
 }

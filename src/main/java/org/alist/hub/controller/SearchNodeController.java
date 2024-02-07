@@ -17,7 +17,7 @@ public class SearchNodeController {
     private final SearchNodeRepository searchNodeRepository;
 
     @GetMapping
-    public Page<SearchNode> search(@RequestParam("s") String s, Query query) {
+    public Page<SearchNode> get(@RequestParam("s") String s, Query query) {
         return searchNodeRepository.findAllByKeyword(s, query.of(SearchNode.class));
     }
 }

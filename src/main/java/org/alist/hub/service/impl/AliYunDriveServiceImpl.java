@@ -2,15 +2,15 @@ package org.alist.hub.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
-import org.alist.hub.api.Http;
-import org.alist.hub.api.Payload;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.Response;
 import org.alist.hub.bo.AliYunDriveBO;
+import org.alist.hub.client.Http;
+import org.alist.hub.client.Payload;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.service.AliYunDriveService;
 import org.alist.hub.service.AppConfigService;
-import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.util.JsonUtils;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -38,9 +38,9 @@ public class AliYunDriveServiceImpl implements AliYunDriveService {
         JsonNode jsonNode = response.asJsonNode();
 
         // 获取bizExt字段，并判断是否为空
-        Optional<JsonNode> bizExt = JsonUtil.getNodeByPath(jsonNode, "content.data.bizExt");
+        Optional<JsonNode> bizExt = JsonUtils.getNodeByPath(jsonNode, "content.data.bizExt");
         if (bizExt.isEmpty()) {
-            return JsonUtil.getNodeByPath(jsonNode, "content.data.qrCodeStatus").map(JsonNode::asText).orElse("授权失败");
+            return JsonUtils.getNodeByPath(jsonNode, "content.data.qrCodeStatus").map(JsonNode::asText).orElse("授权失败");
         }
 
         // 解码bizExt字段的Base64编码
@@ -50,7 +50,7 @@ public class AliYunDriveServiceImpl implements AliYunDriveService {
         String json = new String(bytes, StandardCharsets.UTF_8);
 
         // 将JSON字符串解析为AliYunDriveResp对象，判断是否解析成功
-        Optional<AliYunDriveBO> resp = JsonUtil.readValue(json, AliYunDriveBO.class, "pds_login_result");
+        Optional<AliYunDriveBO> resp = JsonUtils.readValue(json, AliYunDriveBO.class, "pds_login_result");
         if (resp.isEmpty()) {
             throw new ServiceException("解析数据失败");
         }

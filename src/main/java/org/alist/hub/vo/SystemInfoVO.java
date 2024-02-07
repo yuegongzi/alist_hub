@@ -2,7 +2,7 @@ package org.alist.hub.vo;
 
 import lombok.Data;
 import org.alist.hub.bean.DiskUsageInfo;
-import org.alist.hub.utils.DiskUsageUtil;
+import org.alist.hub.util.DiskUsageUtils;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.ComputerSystem;
@@ -54,7 +54,7 @@ public class SystemInfoVO {
         Util.sleep(1000);
         vo.setCpuLoaded(processor.getSystemCpuLoadBetweenTicks(prevTicks) * 100);
         vo.setSensors(hal.getSensors());
-        List<DiskUsageInfo> diskUsageList = DiskUsageUtil.getDiskUsage();
+        List<DiskUsageInfo> diskUsageList = DiskUsageUtils.getDiskUsage();
         long diskTotal = 0, diskUsed = 0L;
         for (DiskUsageInfo diskUsageInfo : diskUsageList) {
             diskTotal += diskUsageInfo.getTotal();

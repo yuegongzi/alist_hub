@@ -1,4 +1,4 @@
-package org.alist.hub.api;
+package org.alist.hub.external;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
@@ -10,12 +10,14 @@ import org.alist.hub.bean.Response;
 import org.alist.hub.bean.ShareFile;
 import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.bo.Persistent;
+import org.alist.hub.client.Http;
+import org.alist.hub.client.Payload;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.AppConfig;
 import org.alist.hub.repository.AppConfigRepository;
 import org.alist.hub.service.AppConfigService;
-import org.alist.hub.utils.JsonUtil;
-import org.alist.hub.utils.StringUtils;
+import org.alist.hub.util.JsonUtils;
+import org.alist.hub.util.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -56,7 +58,7 @@ public class AliYunDriveClient {
         if (appConfig.isEmpty()) {  // 如果App配置为空
             throw new ServiceException("获取token失败");
         }
-        Optional<AliYunDriveBO> aliYunDriveBO = JsonUtil.readValue(appConfig.get().getValue(), AliYunDriveBO.class);
+        Optional<AliYunDriveBO> aliYunDriveBO = JsonUtils.readValue(appConfig.get().getValue(), AliYunDriveBO.class);
         if (aliYunDriveBO.isEmpty()) {  // 如果AliyunOpenBO对象为空
             throw new ServiceException("获取token失败");
         }
@@ -100,6 +102,15 @@ public class AliYunDriveClient {
         return Optional.empty();
     }
 
+    /**
+     * 获取分享列表
+     *
+     * @param shareId      分享ID
+     * @param sharePwd     分享密码
+     * @param parentFileId 父文件ID
+     * @return 分享列表
+     * @throws ServiceException 获取分享链接失败时抛出的异常
+     */
     public List<ShareFile> getShareList(String shareId, String sharePwd, String parentFileId) {
         Optional<String> shareToken = getShareToken(shareId, sharePwd);
         if (shareToken.isEmpty()) {
@@ -118,7 +129,16 @@ public class AliYunDriveClient {
         return new ArrayList<>();
     }
 
-    public boolean copy(FileWatcher fileWatcher, String shareId, String sharePwd, List<String> fileIds) {
+
+    /**
+     * 复制文件
+     *
+     * @param fileWatcher 文件监听器
+     * @param shareId     共享ID
+     * @param sharePwd    共享密码
+     * @param fileIds     文件ID列表
+     */
+    public void copy(FileWatcher fileWatcher, String shareId, String sharePwd, List<String> fileIds) {
         List<Map<String, Object>> requests = new ArrayList<>();
         for (int i = 0; i < fileIds.size(); i++) {
             Map<String, Object> content = new HashMap<>();
@@ -139,10 +159,11 @@ public class AliYunDriveClient {
         }
         Payload payload = Payload.create("https://api.aliyundrive.com/adrive/v4/batch")
                 .addHeader("user-agent", Constants.USER_AGENT)
-                .addHeader("x-share-token", getShareToken(shareId, sharePwd).get())
+                .addHeader("x-share-token", getShareToken(shareId, sharePwd).orElse(""))
                 .addHeader("Authorization", "Bearer " + getAccessToken())
                 .addBody("requests", requests)
                 .addBody("resource", "file");
-        return http.post(payload).getStatusCode().is2xxSuccessful();
+        http.post(payload).getStatusCode().is2xxSuccessful();
     }
+
 }

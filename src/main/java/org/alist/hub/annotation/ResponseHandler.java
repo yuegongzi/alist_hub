@@ -2,7 +2,7 @@ package org.alist.hub.annotation;
 
 import jakarta.annotation.Nonnull;
 import org.alist.hub.bean.R;
-import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.util.JsonUtils;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Page;
@@ -41,7 +41,7 @@ public class ResponseHandler implements ResponseBodyAdvice<Object> {
             return body;
         }
         if (body instanceof String) {
-            return JsonUtil.toJson(R.data(body));
+            return JsonUtils.toJson(R.data(body));
         }
         if (body instanceof Page<?>) {
             return R.page((Page<?>) body);

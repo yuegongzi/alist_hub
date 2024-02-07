@@ -2,15 +2,15 @@ package org.alist.hub.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
-import org.alist.hub.api.AliYunOpenClient;
-import org.alist.hub.api.Http;
-import org.alist.hub.api.Payload;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileInfo;
 import org.alist.hub.bean.Response;
 import org.alist.hub.bo.AliYunFolderBO;
 import org.alist.hub.bo.AliYunOpenBO;
+import org.alist.hub.client.Http;
+import org.alist.hub.client.Payload;
 import org.alist.hub.exception.ServiceException;
+import org.alist.hub.external.AliYunOpenClient;
 import org.alist.hub.service.AliYunOpenService;
 import org.alist.hub.service.AppConfigService;
 import org.springframework.stereotype.Service;

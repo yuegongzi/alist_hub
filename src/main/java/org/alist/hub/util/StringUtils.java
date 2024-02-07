@@ -1,4 +1,4 @@
-package org.alist.hub.utils;
+package org.alist.hub.util;
 
 import org.alist.hub.bean.PathInfo;
 

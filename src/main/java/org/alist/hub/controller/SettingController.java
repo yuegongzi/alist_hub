@@ -5,14 +5,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.alist.hub.api.AListClient;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.AliYunDriveBO;
+import org.alist.hub.bo.NoticeBO;
 import org.alist.hub.bo.PikPakBo;
 import org.alist.hub.configure.HubProperties;
 import org.alist.hub.dto.AccountDTO;
 import org.alist.hub.dto.SecurityDTO;
 import org.alist.hub.exception.ServiceException;
+import org.alist.hub.external.AListClient;
 import org.alist.hub.model.AppConfig;
 import org.alist.hub.model.Storage;
 import org.alist.hub.model.User;
@@ -23,9 +24,9 @@ import org.alist.hub.service.AliYunDriveService;
 import org.alist.hub.service.AliYunOpenService;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.StorageService;
-import org.alist.hub.utils.JsonUtil;
-import org.alist.hub.utils.RandomUtil;
-import org.alist.hub.utils.StringUtils;
+import org.alist.hub.util.JsonUtils;
+import org.alist.hub.util.RandomUtils;
+import org.alist.hub.util.StringUtils;
 import org.alist.hub.vo.AccountVO;
 import org.alist.hub.vo.ConfigVO;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,7 +57,7 @@ public class SettingController {
     private final HubProperties hubProperties;
 
     @GetMapping("/security")
-    public List<SecurityDTO> get() {
+    public List<SecurityDTO> getSecurity() {
         List<SecurityDTO> securityDTOList = new ArrayList<>();
         Optional<User> optional = userRepository.findByUsername("guest");
         Optional<Storage> ali = storageRepository.findById(Constants.MY_ALI_ID);
@@ -73,7 +74,7 @@ public class SettingController {
     }
 
     @PutMapping("/security")
-    public void security(@RequestBody @Valid SecurityDTO securityDTO) {
+    public void updateSecurity(@RequestBody @Valid SecurityDTO securityDTO) {
         switch (securityDTO.getLabel()) {
             case "ali":
                 if (securityDTO.getValue()) {
@@ -87,7 +88,7 @@ public class SettingController {
                 appConfig.setId(Constants.TV_BOX_TOKEN);
                 appConfig.setGroup(0);
                 if (securityDTO.getValue()) {
-                    appConfig.setValue(RandomUtil.generateRandomString(64));
+                    appConfig.setValue(RandomUtils.generateRandomString(64));
                     appConfigRepository.save(appConfig);
                 } else {
                     appConfigRepository.deleteById(appConfig.getId());
@@ -99,11 +100,11 @@ public class SettingController {
     }
 
     @PutMapping("/account")
-    public void account(@RequestBody @Valid AccountDTO accountDTO) {
+    public void updateAccount(@RequestBody @Valid AccountDTO account) {
         List<Storage> storages;
-        switch (accountDTO.getType()) {
+        switch (account.getType()) {
             case "drive":
-                String status = aliYunDriveService.authorize(accountDTO.getParams());
+                String status = aliYunDriveService.authorize(account.getParams());
                 if (!"CONFIRMED".equals(status)) {
                     throw new ServiceException("校验失败");
                 }
@@ -111,8 +112,8 @@ public class SettingController {
                 storages.forEach(storageService::flush);
                 break;
             case "openapi":
-                if (accountDTO.getParams().containsKey("url")) {
-                    aliYunOpenService.authorize(accountDTO.getParams().get("url").toString());
+                if (account.getParams().containsKey("url")) {
+                    aliYunOpenService.authorize(account.getParams().get("url").toString());
                 } else {
                     throw new IllegalArgumentException("参数url未填写");
                 }
@@ -121,7 +122,7 @@ public class SettingController {
                 storages.forEach(storageService::flush);
                 break;
             case "pikpak":
-                Map<String, Object> params = accountDTO.getParams();
+                Map<String, Object> params = account.getParams();
                 if (params.containsKey("username") && params.containsKey("password")) {
                     PikPakBo pikPakBo = new PikPakBo();
                     pikPakBo.setPassword(params.get("password").toString());
@@ -138,13 +139,13 @@ public class SettingController {
 
     @GetMapping("/account")
     public AccountVO getAccount() {
-        AliYunDriveBO aliYunDriveBO = new AliYunDriveBO();
-        PikPakBo pikPakBo = new PikPakBo();
-        Optional<AliYunDriveBO> al = appConfigService.get(aliYunDriveBO, AliYunDriveBO.class);
-        Optional<PikPakBo> pk = appConfigService.get(pikPakBo, PikPakBo.class);
+        Optional<AliYunDriveBO> al = appConfigService.get(new AliYunDriveBO(), AliYunDriveBO.class);
+        Optional<PikPakBo> pk = appConfigService.get(new PikPakBo(), PikPakBo.class);
+        Optional<NoticeBO> notice = appConfigService.get(new NoticeBO(), NoticeBO.class);
         AccountVO accountVO = new AccountVO();
         accountVO.setPikpak(pk.map(PikPakBo::getUsername).orElse(null));
         accountVO.setUsername(al.map(AliYunDriveBO::getUserName).orElse(null));
+        accountVO.setPushKey(notice.map(NoticeBO::getPushKey).orElse(null));
         return accountVO;
     }
 
@@ -152,7 +153,7 @@ public class SettingController {
     @SneakyThrows
     public ConfigVO getConfig() {
         String config = Files.readString(Path.of(hubProperties.getPath() + "/config.json"));
-        JsonNode jsonNode = JsonUtil.readTree(config);
+        JsonNode jsonNode = JsonUtils.readTree(config);
         ConfigVO configVO = new ConfigVO();
         configVO.setOpenTokenUrl(jsonNode.findPath("opentoken_auth_url").asText());
         configVO.setSiteUrl(jsonNode.findPath("site_url").asText());
@@ -163,7 +164,7 @@ public class SettingController {
     @SneakyThrows
     public void updateConfig(@RequestBody ConfigVO configVO) {
         String config = Files.readString(Path.of(hubProperties.getPath() + "/config.json"));
-        JsonNode jsonNode = JsonUtil.readTree(config);
+        JsonNode jsonNode = JsonUtils.readTree(config);
         ObjectNode objectNode = (ObjectNode) jsonNode;
         if (StringUtils.hasText(configVO.getOpenTokenUrl())) {
             objectNode.put("opentoken_auth_url", configVO.getOpenTokenUrl());
@@ -171,6 +172,6 @@ public class SettingController {
         if (StringUtils.hasText(configVO.getSiteUrl())) {
             objectNode.put("site_url", configVO.getSiteUrl());
         }
-        Files.writeString(Path.of(hubProperties.getPath() + "/config.json"), JsonUtil.toJson(objectNode));
+        Files.writeString(Path.of(hubProperties.getPath() + "/config.json"), JsonUtils.toJson(objectNode));
     }
 }

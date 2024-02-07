@@ -1,8 +1,8 @@
 package org.alist.hub.bean;
 
 import lombok.Data;
-import org.alist.hub.utils.FieldUtil;
-import org.alist.hub.utils.StringUtils;
+import org.alist.hub.util.FieldUtils;
+import org.alist.hub.util.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
@@ -22,13 +22,13 @@ public class Query {
         List<Sort.Order> orders = new ArrayList<>();
         String[] asc = StringUtils.split(this.ascs, ",");
         for (String string : asc) {
-            if (FieldUtil.hasField(clazz, string)) {
+            if (FieldUtils.hasField(clazz, string)) {
                 orders.add(new Sort.Order(Sort.Direction.ASC, string));
             }
         }
         String[] desc = StringUtils.split(this.descs, ",");
         for (String string : desc) {
-            if (FieldUtil.hasField(clazz, string)) {
+            if (FieldUtils.hasField(clazz, string)) {
                 orders.add(new Sort.Order(Sort.Direction.DESC, string));
             }
         }

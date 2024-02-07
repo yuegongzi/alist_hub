@@ -1,4 +1,4 @@
-package org.alist.hub.utils;
+package org.alist.hub.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.DiskUsageInfo;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-public class DiskUsageUtil {
+public class DiskUsageUtils {
 
     public static List<DiskUsageInfo> getDiskUsage() {
         List<DiskUsageInfo> diskUsageList = new ArrayList<>();

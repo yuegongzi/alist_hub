@@ -1,4 +1,4 @@
-package org.alist.hub.api;
+package org.alist.hub.external;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
@@ -8,11 +8,13 @@ import org.alist.hub.bean.ExpiringMap;
 import org.alist.hub.bean.FileSystem;
 import org.alist.hub.bean.FileSystemResp;
 import org.alist.hub.bean.Response;
+import org.alist.hub.client.Http;
+import org.alist.hub.client.Payload;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.Storage;
 import org.alist.hub.model.User;
 import org.alist.hub.repository.UserRepository;
-import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.util.JsonUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -91,7 +93,7 @@ public class AListClient {
         payload.addBody("driver", storage.getDriver());
         payload.addBody("order_by", storage.getOrderBy());
         payload.addBody("order_direction", storage.getOrderDirection());
-        payload.addBody("addition", JsonUtil.toJson(storage.getAddition()));
+        payload.addBody("addition", JsonUtils.toJson(storage.getAddition()));
         isSuccess(http.post(payload).asJsonNode());
     }
 
@@ -112,12 +114,12 @@ public class AListClient {
         return jsonNode.findValue("token").asText();
     }
 
-    private int calculateTotalPages(int total, int pageSize) {
+    private int calculateTotalPages(int total) {
         // 计算总页数
-        int totalPages = total / pageSize;
+        int totalPages = total / 50;
 
         // 如果总记录数不能被每页记录数整除（有余数），说明还需要额外一页来展示剩余记录
-        if (total % pageSize != 0) {
+        if (total % 50 != 0) {
             totalPages++;
         }
 
@@ -138,11 +140,11 @@ public class AListClient {
                         .addBody("per_page", 50))
                 .asJsonNode();
         if (jsonNode.findValue("code").asInt() == 200) {
-            Optional<FileSystemResp> resp = JsonUtil.toPojo(jsonNode.findValue("data"), FileSystemResp.class);
+            Optional<FileSystemResp> resp = JsonUtils.toPojo(jsonNode.findValue("data"), FileSystemResp.class);
             resp.ifPresent(r -> {
                 if (r.getContent() != null) {
                     list.addAll(r.getContent());
-                    if (calculateTotalPages(r.getTotal(), 50) > page) {
+                    if (calculateTotalPages(r.getTotal()) > page) {
                         fsExecute(path, list, page + 1);
                     }
                 }

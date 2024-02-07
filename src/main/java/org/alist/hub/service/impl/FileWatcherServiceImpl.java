@@ -1,22 +1,23 @@
 package org.alist.hub.service.impl;
 
 import lombok.AllArgsConstructor;
-import org.alist.hub.api.AliYunDriveClient;
-import org.alist.hub.api.AliYunOpenClient;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileInfo;
 import org.alist.hub.bean.FileItem;
 import org.alist.hub.bean.FileWatcher;
 import org.alist.hub.bean.ShareFile;
 import org.alist.hub.exception.ServiceException;
+import org.alist.hub.external.AliYunDriveClient;
+import org.alist.hub.external.AliYunOpenClient;
+import org.alist.hub.external.PushDeerClient;
 import org.alist.hub.model.AppConfig;
 import org.alist.hub.model.Storage;
 import org.alist.hub.repository.AppConfigRepository;
 import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.service.FileWatcherService;
-import org.alist.hub.utils.JsonUtil;
-import org.alist.hub.utils.RandomUtil;
-import org.alist.hub.utils.StringUtils;
+import org.alist.hub.util.JsonUtils;
+import org.alist.hub.util.RandomUtils;
+import org.alist.hub.util.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,6 +31,8 @@ public class FileWatcherServiceImpl implements FileWatcherService {
     private final AliYunDriveClient aliYunDriveClient;
     private final AliYunOpenClient aliYunOpenClient;
     private final AppConfigRepository appConfigRepository;
+    private final PushDeerClient pushDeerClient;
+
 
     /**
      * 监视指定存储的指定路径下的文件夹变化
@@ -85,8 +88,8 @@ public class FileWatcherServiceImpl implements FileWatcherService {
         // 创建AppConfig对象并保存
         AppConfig appConfig = new AppConfig();
         appConfig.setGroup(Constants.WATCHER_GROUP);
-        appConfig.setId(RandomUtil.generateRandomString(32));
-        appConfig.setValue(JsonUtil.toJson(fileWatcher));
+        appConfig.setId(RandomUtils.generateRandomString(32));
+        appConfig.setValue(JsonUtils.toJson(fileWatcher));
         appConfigRepository.save(appConfig);
     }
 
@@ -105,7 +108,7 @@ public class FileWatcherServiceImpl implements FileWatcherService {
         }
         AppConfig appConfig = optionalAppConfig.get();
         // 将AppConfig对象的值转换为FileWatcher对象
-        Optional<FileWatcher> optionalFileWatcher = JsonUtil.readValue(appConfig.getValue(), FileWatcher.class);
+        Optional<FileWatcher> optionalFileWatcher = JsonUtils.readValue(appConfig.getValue(), FileWatcher.class);
         if (optionalFileWatcher.isEmpty()) {
             throw new ServiceException("数据转换失败");
         }
@@ -116,6 +119,7 @@ public class FileWatcherServiceImpl implements FileWatcherService {
             throw new ServiceException("存储不存在");
         }
         Storage s = storage.get();
+        StringBuilder stringBuilder = new StringBuilder();
         // 获取指定驱动器中的文件列表
         List<FileItem> fileItems = aliYunOpenClient.getFileList(fileWatcher.getToDriveId(), fileWatcher.getToFileId());
         // 获取指定分享列表中的文件列表
@@ -132,9 +136,15 @@ public class FileWatcherServiceImpl implements FileWatcherService {
 
             if (matchingFileId.isEmpty()) {
                 array.add(file.getFileId());
+                stringBuilder.append("- ").append(file.getName()).append("\n");
             }
         }
         // 复制文件
         aliYunDriveClient.copy(fileWatcher, s.getAddition().get("share_id").toString(), s.getAddition().get("share_pwd").toString(), array);
+        pushDeerClient.ifPresent(notice -> {
+            if (notice.isUpdate()) {
+                pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("文件列表: %s", stringBuilder));
+            }
+        });
     }
 }

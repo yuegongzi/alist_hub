@@ -3,18 +3,18 @@ package org.alist.hub.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.alist.hub.api.Http;
-import org.alist.hub.api.Payload;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.XiaoYaBo;
+import org.alist.hub.client.Http;
+import org.alist.hub.client.Payload;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.SearchNodeService;
 import org.alist.hub.service.StorageService;
-import org.alist.hub.utils.CommandUtil;
-import org.alist.hub.utils.StringUtils;
-import org.alist.hub.utils.ZipUtil;
+import org.alist.hub.util.CommandUtils;
+import org.alist.hub.util.StringUtils;
+import org.alist.hub.util.ZipUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
@@ -45,7 +45,7 @@ public class AListServiceImpl implements AListService {
             String conf = new String(bytes, StandardCharsets.UTF_8);
             Files.writeString(Path.of("/etc/nginx/http.d/default.conf"), conf, StandardCharsets.UTF_8);
             stopNginx();
-            CommandUtil.execute(new ProcessBuilder("nginx"));
+            CommandUtils.execute(new ProcessBuilder("nginx"));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -55,7 +55,7 @@ public class AListServiceImpl implements AListService {
     public void stopNginx() {
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("nginx", "-s", "stop");
-        CommandUtil.execute(builder);
+        CommandUtils.execute(builder);
     }
 
     /**
@@ -70,7 +70,7 @@ public class AListServiceImpl implements AListService {
                 Thread.sleep(1000);
                 ProcessBuilder alist = new ProcessBuilder();
                 alist.command("/opt/alist/alist", "server", "--no-prefix");
-                CommandUtil.execute(alist);
+                CommandUtils.execute(alist);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -87,7 +87,7 @@ public class AListServiceImpl implements AListService {
     public boolean stopAList() {
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("pkill", "-f", "/opt/alist/alist");
-        return CommandUtil.execute(builder);
+        return CommandUtils.execute(builder);
     }
 
     private void download(String file, String unzipPath) {
@@ -97,7 +97,7 @@ public class AListServiceImpl implements AListService {
             // 下载文件
             http.downloadFile(Payload.create(Constants.XIAOYA_BASE_URL + "/update/" + file), path).block();
             // 解压缩文件
-            ZipUtil.unzipFile(Path.of(path), Path.of(unzipPath));
+            ZipUtils.unzipFile(Path.of(path), Path.of(unzipPath));
         } catch (Exception e) {
             // 打印异常信息
             log.error(e.getMessage(), e);
@@ -119,7 +119,7 @@ public class AListServiceImpl implements AListService {
             searchNodeService.update();
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.command("sqlite3", Constants.DATA_DIR + "/data.db", ".read " + Constants.DATA_DIR + "/update.sql");
-            CommandUtil.execute(processBuilder);
+            CommandUtils.execute(processBuilder);
             storageService.resetStorage();//重新设置存储
             this.startAList();
         }

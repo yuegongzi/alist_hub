@@ -1,7 +1,7 @@
 package org.alist.hub.bo;
 
 import lombok.Data;
-import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.util.JsonUtils;
 
 import java.util.Date;
 
@@ -17,7 +17,7 @@ public class XiaoYaBo implements Persistent {
 
     @Override
     public String getValue() {
-        return JsonUtil.toJson(this);
+        return JsonUtils.toJson(this);
     }
 
 }

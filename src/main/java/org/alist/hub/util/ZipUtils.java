@@ -1,10 +1,10 @@
-package org.alist.hub.utils;
+package org.alist.hub.util;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class ZipUtil {
+public class ZipUtils {
     public static void unzipFile(Path zipFilePath, Path destDirectory) throws IOException, InterruptedException {
         // 检查目标目录是否存在，如果不存在则创建
         if (!Files.exists(destDirectory)) {

@@ -2,7 +2,7 @@ package org.alist.hub.bo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.util.JsonUtils;
 
 @Data
 public class AliYunOpenBO implements Persistent {
@@ -22,7 +22,7 @@ public class AliYunOpenBO implements Persistent {
 
     @Override
     public String getValue() {
-        return JsonUtil.toJson(this);
+        return JsonUtils.toJson(this);
     }
 
 }

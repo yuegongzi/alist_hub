@@ -8,7 +8,7 @@ import org.alist.hub.bo.Persistent;
 import org.alist.hub.model.AppConfig;
 import org.alist.hub.repository.AppConfigRepository;
 import org.alist.hub.service.AppConfigService;
-import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.util.JsonUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -55,7 +55,7 @@ public class AppConfigServiceImpl implements AppConfigService {
     public <T> Optional<T> get(Persistent persistent, Class<T> clazz) {
         Optional<AppConfig> appConfig = appConfigRepository.findById(persistent.getId());
         if (appConfig.isPresent()) {
-            return JsonUtil.readValue(appConfig.get().getValue(), clazz);
+            return JsonUtils.readValue(appConfig.get().getValue(), clazz);
         }
         return Optional.empty();
     }

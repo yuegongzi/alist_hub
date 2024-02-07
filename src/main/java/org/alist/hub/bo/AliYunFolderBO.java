@@ -1,7 +1,7 @@
 package org.alist.hub.bo;
 
 import lombok.Data;
-import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.util.JsonUtils;
 
 @Data
 public class AliYunFolderBO implements Persistent {
@@ -16,7 +16,7 @@ public class AliYunFolderBO implements Persistent {
 
     @Override
     public String getValue() {
-        return JsonUtil.toJson(this);
+        return JsonUtils.toJson(this);
     }
 
 }

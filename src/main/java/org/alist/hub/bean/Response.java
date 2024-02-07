@@ -2,7 +2,7 @@ package org.alist.hub.bean;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
-import org.alist.hub.utils.JsonUtil;
+import org.alist.hub.util.JsonUtils;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
@@ -30,18 +30,18 @@ public class Response {
     }
 
     public JsonNode asJsonNode() {
-        return JsonUtil.readTree(this.getBody());
+        return JsonUtils.readTree(this.getBody());
     }
 
     public <T> Optional<T> asValue(Class<T> classValue, String path) {
-        return JsonUtil.readValue(this.getBody(), classValue, path);
+        return JsonUtils.readValue(this.getBody(), classValue, path);
     }
 
     public <T> Optional<T> asValue(Class<T> classValue) {
-        return JsonUtil.readValue(this.getBody(), classValue);
+        return JsonUtils.readValue(this.getBody(), classValue);
     }
 
     public <T> List<T> asList(Class<T> classValue, String path) {
-        return JsonUtil.readTreeValue(this.getBody(), classValue, path);
+        return JsonUtils.readTreeValue(this.getBody(), classValue, path);
     }
 }

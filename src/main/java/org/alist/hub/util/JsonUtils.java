@@ -1,4 +1,4 @@
-package org.alist.hub.utils;
+package org.alist.hub.util;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,7 +22,7 @@ import java.util.TimeZone;
 
 @Slf4j
 @SuppressWarnings("deprecation")
-public class JsonUtil {
+public class JsonUtils {
 
     private static final JsonMapper jsonMapper = new JsonMapper();
 

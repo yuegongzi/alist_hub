@@ -1,4 +1,4 @@
-package org.alist.hub.utils;
+package org.alist.hub.util;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -6,10 +6,10 @@ import java.time.format.DateTimeFormatter;
 /**
  * 日期工具类
  */
-public class DateTimeUtil {
+public class DateTimeUtils {
 
     public static final String PATTERN_DATETIME = "yyyy-MM-dd HH:mm:ss";
-    public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DateTimeUtil.PATTERN_DATETIME);
+    public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern(DateTimeUtils.PATTERN_DATETIME);
 
 
     /**

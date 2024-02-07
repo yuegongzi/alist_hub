@@ -1,4 +1,4 @@
-package org.alist.hub.api;
+package org.alist.hub.client;
 
 import lombok.Data;
 import org.springframework.http.HttpHeaders;
@@ -45,9 +45,9 @@ public class Payload {
     }
 
     public URI getUri() {
-        return UriComponentsBuilder.fromHttpUrl(this.url)
+        return UriComponentsBuilder.fromUriString(this.url)
                 .queryParams(this.urlParams)
-                .build(true)
+                .build(false)
                 .toUri();
     }
 

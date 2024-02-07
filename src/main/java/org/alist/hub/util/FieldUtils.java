@@ -1,7 +1,7 @@
-package org.alist.hub.utils;
+package org.alist.hub.util;
 
 
-public class FieldUtil {
+public class FieldUtils {
 
     public static boolean hasField(Class<?> clazz, String fieldName) {
         try {

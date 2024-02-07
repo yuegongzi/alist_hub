@@ -1,4 +1,4 @@
-package org.alist.hub.utils;
+package org.alist.hub.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.alist.hub.bean.UserClaims;
@@ -16,7 +16,7 @@ public class RequestContextUtil {
     }
 
     public static UserClaims getUserClaims() {
-        Optional<UserClaims> userClaims = JwtUtil.decodeJwt(getCurrentRequest().getHeader("Authorization"));
+        Optional<UserClaims> userClaims = JwtUtils.decodeJwt(getCurrentRequest().getHeader("Authorization"));
         if (userClaims.isEmpty()) {
             throw new ServiceException("获取用户信息失败");
         }

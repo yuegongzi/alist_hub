@@ -1,8 +1,7 @@
-package org.alist.hub.api;
+package org.alist.hub.client;
 
 import lombok.AllArgsConstructor;
 import org.alist.hub.bean.Response;
-import org.alist.hub.utils.JsonUtil;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,6 @@ public class Http {
 
     // POST请求
     public Response post(Payload payload) {
-        System.out.println(JsonUtil.toJson(payload.getBody()));
         return Response.of(webClient.post()
                 .uri(payload.getUri())
                 .bodyValue(payload.getBody())

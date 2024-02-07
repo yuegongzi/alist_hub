@@ -1,5 +1,6 @@
-package org.alist.hub.provider;
+package org.alist.hub.context;
 
+import jakarta.annotation.Nonnull;
 import org.alist.hub.configure.HubProperties;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -19,7 +20,7 @@ public class ApplicationContextProvider implements ApplicationContextAware {
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext context) throws BeansException {
+    public void setApplicationContext(@Nonnull ApplicationContext context) throws BeansException {
         applicationContext = context;
     }
 }

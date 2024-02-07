@@ -1,20 +1,23 @@
-package org.alist.hub.task;
+package org.alist.hub.scheduler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.alist.hub.api.AliYunDriveClient;
-import org.alist.hub.api.AliYunOpenClient;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileItem;
 import org.alist.hub.bo.AliYunFolderBO;
 import org.alist.hub.bo.AliYunSignBO;
+import org.alist.hub.external.AliYunDriveClient;
+import org.alist.hub.external.AliYunOpenClient;
+import org.alist.hub.external.PushDeerClient;
 import org.alist.hub.model.AppConfig;
 import org.alist.hub.repository.AppConfigRepository;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.FileWatcherService;
 import org.alist.hub.service.SearchNodeService;
+import org.alist.hub.util.DateTimeUtils;
+import org.alist.hub.util.JsonUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -25,8 +28,9 @@ import java.util.Optional;
 @Component
 @Slf4j
 @AllArgsConstructor
-public class ScheduledTask {
+public class AListHubScheduler {
     private final AliYunDriveClient aliYunDriveClient;
+    private final PushDeerClient pushDeerClient;
     private final AppConfigService appConfigService;
     private final AListService aListService;
     private final AliYunOpenClient aliYunOpenClient;
@@ -40,12 +44,23 @@ public class ScheduledTask {
         JsonNode jsonNode = aliYunDriveClient.sign();
         aliYunSignBO.setResult(jsonNode);
         appConfigService.saveOrUpdate(aliYunSignBO);
+        pushDeerClient.ifPresent(notice -> {
+            if (notice.isSign()) {
+                Optional<Integer> signCount = JsonUtils.getNodeByPath(jsonNode, "result.signInCount").map(JsonNode::asInt);
+                pushDeerClient.send(notice.getPushKey(), "阿里云盘签到成功", String.format("本月累计签到%s天", signCount.orElse(0)));
+            }
+        });
     }
 
     @Scheduled(cron = "0 17 05 * * ?")
     public void update() {
         if (aListService.checkUpdate()) {
             aListService.update();
+            pushDeerClient.ifPresent(notice -> {
+                if (notice.isUpdate()) {
+                    pushDeerClient.send(notice.getPushKey(), "小雅数据更新成功", String.format("更新时间: %s", DateTimeUtils.format(LocalDateTime.now())));
+                }
+            });
         }
     }
 

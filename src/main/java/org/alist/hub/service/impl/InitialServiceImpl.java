@@ -6,8 +6,8 @@ import org.alist.hub.bean.Constants;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.InitialService;
-import org.alist.hub.utils.CommandUtil;
-import org.alist.hub.utils.ZipUtil;
+import org.alist.hub.util.CommandUtils;
+import org.alist.hub.util.ZipUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
@@ -44,7 +44,7 @@ public class InitialServiceImpl implements InitialService {
         Files.writeString(Path.of("/create.sh"), script);
 
         // 执行命令"sh create.sh"
-        CommandUtil.execute(new ProcessBuilder("sh", "/create.sh"));
+        CommandUtils.execute(new ProcessBuilder("sh", "/create.sh"));
     }
 
 
@@ -58,9 +58,9 @@ public class InitialServiceImpl implements InitialService {
             // 如果appConfigService已经初始化，则进行以下操作
             if (appConfigService.isInitialized()) {
                 // 解压缩index.zip文件到/index目录
-                ZipUtil.unzipFile(Path.of(Constants.DATA_DIR + "/index.zip"), Path.of("/index"));
+                ZipUtils.unzipFile(Path.of(Constants.DATA_DIR + "/index.zip"), Path.of("/index"));
                 // 解压缩tvbox.zip文件到/www目录
-                ZipUtil.unzipFile(Path.of(Constants.DATA_DIR + "/tvbox.zip"), Path.of("/www"));
+                ZipUtils.unzipFile(Path.of(Constants.DATA_DIR + "/tvbox.zip"), Path.of("/www"));
                 // 启动AList服务
                 aListService.startAList();
             }
