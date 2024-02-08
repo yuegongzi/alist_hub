@@ -176,10 +176,11 @@ public class JsonUtils {
      * @return 读取到的值的列表
      */
     public static <T> List<T> readTreeValue(String json, Class<T> clazz, String path) {
-        JsonNode jsonNode = readTree(json);
-        Optional<JsonNode> value = getNodeByPath(jsonNode, path);
+        JsonNode dataNode = readTree(json);
+        Optional<JsonNode> value = getNodeByPath(dataNode, path);
+        List<T> resultList = new ArrayList<>();
         if (value.isPresent()) {
-            List<T> resultList = new ArrayList<>();
+            JsonNode jsonNode = value.get();
             if (jsonNode.isArray()) {
                 Iterator<JsonNode> elements = jsonNode.elements();
                 while (elements.hasNext()) {
@@ -192,9 +193,8 @@ public class JsonUtils {
                     }
                 }
             }
-            return resultList;
         }
-        return new ArrayList<>();
+        return resultList;
     }
 
     /**

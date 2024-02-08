@@ -52,7 +52,7 @@ public class AListHubScheduler {
         });
     }
 
-    @Scheduled(cron = "0 17 05 * * ?")
+    @Scheduled(cron = "0 17 01 * * ?")
     public void update() {
         if (aListService.checkUpdate()) {
             aListService.update();
@@ -64,7 +64,7 @@ public class AListHubScheduler {
         }
     }
 
-    @Scheduled(cron = "0 18 06 * * ?")
+    @Scheduled(cron = "0 18 02 * * ?")
     public void build() {
         searchNodeService.build();
     }
@@ -72,7 +72,7 @@ public class AListHubScheduler {
     /**
      * 定时任务，用于删除过期文件
      */
-    @Scheduled(initialDelay = 120 * 1000, fixedRate = 20 * 60 * 1000)
+    @Scheduled(initialDelay = 20 * 1000, fixedRate = 20 * 60 * 1000)
     public void deleteExpire() {
         Optional<AliYunFolderBO> aliYunFolderBO = appConfigService.get(new AliYunFolderBO(), AliYunFolderBO.class);
         aliYunFolderBO.ifPresent(yunFolderBO -> {

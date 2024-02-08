@@ -142,8 +142,8 @@ public class FileWatcherServiceImpl implements FileWatcherService {
         // 复制文件
         aliYunDriveClient.copy(fileWatcher, s.getAddition().get("share_id").toString(), s.getAddition().get("share_pwd").toString(), array);
         pushDeerClient.ifPresent(notice -> {
-            if (notice.isUpdate()) {
-                pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("文件列表: %s", stringBuilder));
+            if (notice.isTransfer() && !array.isEmpty()) {
+                pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s", stringBuilder));
             }
         });
     }
