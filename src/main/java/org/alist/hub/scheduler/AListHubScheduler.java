@@ -17,7 +17,6 @@ import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.FileWatcherService;
 import org.alist.hub.service.SearchNodeService;
 import org.alist.hub.util.DateTimeUtils;
-import org.alist.hub.util.JsonUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -46,8 +45,8 @@ public class AListHubScheduler {
         appConfigService.saveOrUpdate(aliYunSignBO);
         pushDeerClient.ifPresent(notice -> {
             if (notice.isSign()) {
-                Optional<Integer> signCount = JsonUtils.getNodeByPath(jsonNode, "result.signInCount").map(JsonNode::asInt);
-                pushDeerClient.send(notice.getPushKey(), "阿里云盘签到成功", String.format("本月累计签到%s天", signCount.orElse(0)));
+                Integer signCount = jsonNode.findValue("signInCount").asInt(0);
+                pushDeerClient.send(notice.getPushKey(), "阿里云盘签到成功", String.format("本月累计签到%s天", signCount));
             }
         });
     }

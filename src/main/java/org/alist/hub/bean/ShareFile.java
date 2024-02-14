@@ -1,10 +1,7 @@
 package org.alist.hub.bean;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 public class ShareFile {
@@ -25,14 +22,6 @@ public class ShareFile {
 
     @JsonProperty("type")
     private String type;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
-    @JsonProperty("created_at")
-    private LocalDateTime createdAt;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
-    @JsonProperty("updated_at")
-    private LocalDateTime updatedAt;
 
     @JsonProperty("file_extension")
     private String fileExtension;
