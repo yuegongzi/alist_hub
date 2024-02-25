@@ -82,6 +82,7 @@ public class FileWatcherServiceImpl implements FileWatcherService {
         appConfig.setId(RandomUtils.generateRandomString(32));
         appConfig.setValue(JsonUtils.toJson(fileWatcher));
         appConfigRepository.save(appConfig);
+        merge(appConfig.getId());
     }
 
     /**
