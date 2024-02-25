@@ -6,9 +6,7 @@ import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileWatcher;
 import org.alist.hub.dto.FileWatcherDTO;
 import org.alist.hub.model.AppConfig;
-import org.alist.hub.model.Storage;
 import org.alist.hub.repository.AppConfigRepository;
-import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.service.FileWatcherService;
 import org.alist.hub.util.JsonUtils;
 import org.alist.hub.vo.FileWatcherVO;
@@ -30,11 +28,10 @@ import java.util.Optional;
 public class FileWatcherController {
     private final FileWatcherService fileWatcherService;
     private final AppConfigRepository appConfigRepository;
-    private final StorageRepository storageRepository;
 
     @PostMapping
     public void post(@RequestBody @Valid FileWatcherDTO fileWatcher) {
-        fileWatcherService.watch(fileWatcher.getStorageId(), fileWatcher.getPath(), fileWatcher.getFolderName());
+        fileWatcherService.watch(fileWatcher.getPath(), fileWatcher.getFolderName());
     }
 
     @GetMapping
@@ -53,10 +50,9 @@ public class FileWatcherController {
             FileWatcherVO fileWatcherVO = new FileWatcherVO();
             Optional<FileWatcher> watcher = JsonUtils.readValue(appConfig.getValue(), FileWatcher.class);
             if (watcher.isPresent()) {
-                fileWatcherVO.setFolderName(watcher.get().getFolderName());
+                fileWatcherVO.setPath(watcher.get().getPath());
                 fileWatcherVO.setId(appConfig.getId());
-                Optional<Storage> storage = storageRepository.findById(watcher.get().getStorageId());
-                storage.ifPresent(s -> fileWatcherVO.setPath(s.getMountPath() + watcher.get().getPath()));
+                fileWatcherVO.setFolderName(watcher.get().getFolderName());
                 list.add(fileWatcherVO);
             }
         });

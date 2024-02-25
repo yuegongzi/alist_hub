@@ -132,6 +132,14 @@ public class AListClient {
         return list;
     }
 
+    public String get(String path) {
+        JsonNode jsonNode = http.post(create("/fs/get")
+                        .addBody("path", path)
+                        .addBody("refresh", true))
+                .asJsonNode();
+        return jsonNode.findPath("raw_url").asText();
+    }
+
     public void fsExecute(String path, List<FileSystem> list, int page) {
         JsonNode jsonNode = http.post(create("/fs/list")
                         .addBody("path", path)

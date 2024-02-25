@@ -93,7 +93,7 @@ public class AListHubScheduler {
         });
     }
 
-    @Scheduled(initialDelay = 60 * 60 * 1000, fixedRate = 60 * 60 * 1000)
+    @Scheduled(initialDelay = 180 * 60 * 1000, fixedRate = 180 * 60 * 1000)
     public void copy() {
         List<AppConfig> appConfigs = appConfigRepository.findAllByGroup(Constants.WATCHER_GROUP);
         appConfigs.forEach(appConfig -> {

@@ -1,90 +1,81 @@
 package org.alist.hub.service.impl;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
-import org.alist.hub.bean.FileInfo;
-import org.alist.hub.bean.FileItem;
+import org.alist.hub.bean.FileSystem;
 import org.alist.hub.bean.FileWatcher;
-import org.alist.hub.bean.ShareFile;
 import org.alist.hub.exception.ServiceException;
-import org.alist.hub.external.AliYunDriveClient;
-import org.alist.hub.external.AliYunOpenClient;
+import org.alist.hub.external.AListClient;
+import org.alist.hub.external.Aria2Client;
 import org.alist.hub.external.PushDeerClient;
 import org.alist.hub.model.AppConfig;
-import org.alist.hub.model.Storage;
 import org.alist.hub.repository.AppConfigRepository;
-import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.service.FileWatcherService;
 import org.alist.hub.util.JsonUtils;
 import org.alist.hub.util.RandomUtils;
 import org.alist.hub.util.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class FileWatcherServiceImpl implements FileWatcherService {
-    private final StorageRepository storageRepository;
-    private final AliYunDriveClient aliYunDriveClient;
-    private final AliYunOpenClient aliYunOpenClient;
+    private final Aria2Client aria2Client;
     private final AppConfigRepository appConfigRepository;
     private final PushDeerClient pushDeerClient;
+    private final AListClient aListClient;
 
+    /**
+     * 获取指定目录下的所有文件名列表
+     *
+     * @param directoryPath 目录路径
+     * @return 文件名列表
+     */
+    public static List<String> listFileNamesInDirectory(String directoryPath) {
+        Path path = Paths.get(directoryPath);
+        // 检查目录是否存在，如果不存在则创建
+        if (!Files.exists(path)) {
+            try {
+                Files.createDirectories(path);
+                return new ArrayList<>(); // 新创建的目录是空的
+            } catch (IOException e) {
+                return new ArrayList<>(); // 出现异常时返回空列表
+            }
+        }
+        // 尝试列出目录中的文件名称，过滤掉子目录
+        try (var files = Files.list(path)) {
+            return files.filter(Files::isRegularFile)
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return new ArrayList<>(); // 读取文件列表失败时返回空列表
+    }
 
     /**
      * 监视指定存储的指定路径下的文件夹变化
      *
-     * @param storageId  存储ID
      * @param path       文件夹路径
      * @param folderName 文件夹名称
      */
     @Override
-    public void watch(Long storageId, String path, String folderName) {
-        // 根据存储ID获取存储对象
-        Optional<Storage> storage = storageRepository.findById(storageId);
-        if (storage.isEmpty()) {
-            throw new ServiceException("存储不存在");
-        }
-        Storage s = storage.get();
-        // 获取根文件夹ID
-        Object rootFolderId = s.getAddition().get("root_folder_id");
-        String parentFileId = "root";
-        if (rootFolderId != null && StringUtils.hasText(rootFolderId.toString())) {
-            parentFileId = rootFolderId.toString();
-        }
-        // 将路径按"/"分割为数组
-        String[] paths = StringUtils.split(path, "/");
+    public void watch(String path, String folderName) {
         // 创建FileWatcher对象
         FileWatcher fileWatcher = new FileWatcher();
-        fileWatcher.setParentFileId(parentFileId);
-        // 遍历路径数组
-        for (String p : paths) {
-            // 调用阿里云客户端获取共享文件列表
-            List<ShareFile> shareFiles = aliYunDriveClient.getShareList(s.getAddition().get("share_id").toString(), s.getAddition().get("share_pwd").toString(), fileWatcher.getParentFileId());
-            // 遍历共享文件列表
-            for (ShareFile file : shareFiles) {
-                // 如果文件名和类型匹配，则更新FileWatcher对象的参数
-                if (file.getName().equals(p) && file.getType().equals("folder")) {
-                    fileWatcher.setDriveId(file.getDriveId());
-                    fileWatcher.setParentFileId(file.getFileId());
-                    break;
-                }
-            }
-        }
-        // 调用阿里云客户端创建文件夹
-        Optional<FileInfo> fileInfo = aliYunOpenClient.createFolder(folderName, "backup", "root");
-        if (fileInfo.isEmpty()) {
-            throw new ServiceException("创建文件夹失败");
-        }
-        // 更新FileWatcher对象的参数
         fileWatcher.setFolderName(folderName);
-        fileWatcher.setStorageId(storageId);
         fileWatcher.setPath(path);
-        fileWatcher.setToDriveId(fileInfo.get().getDriveId());
-        fileWatcher.setToFileId(fileInfo.get().getFileId());
         // 创建AppConfig对象并保存
         AppConfig appConfig = new AppConfig();
         appConfig.setGroup(Constants.WATCHER_GROUP);
@@ -92,7 +83,6 @@ public class FileWatcherServiceImpl implements FileWatcherService {
         appConfig.setValue(JsonUtils.toJson(fileWatcher));
         appConfigRepository.save(appConfig);
     }
-
 
     /**
      * 文件拷贝和合并
@@ -113,38 +103,26 @@ public class FileWatcherServiceImpl implements FileWatcherService {
             throw new ServiceException("数据转换失败");
         }
         FileWatcher fileWatcher = optionalFileWatcher.get();
-        // 根据FileWatcher对象的存储ID查询Storage对象
-        Optional<Storage> storage = storageRepository.findById(fileWatcher.getStorageId());
-        if (storage.isEmpty()) {
-            throw new ServiceException("存储不存在");
-        }
-        Storage s = storage.get();
+        List<FileSystem> fileSystems = aListClient.fs(fileWatcher.getPath());
         StringBuilder stringBuilder = new StringBuilder();
-        // 获取指定驱动器中的文件列表
-        List<FileItem> fileItems = aliYunOpenClient.getFileList(fileWatcher.getToDriveId(), fileWatcher.getToFileId());
-        // 获取指定分享列表中的文件列表
-        List<ShareFile> shareFiles = aliYunDriveClient.getShareList(s.getAddition().get("share_id").toString(), s.getAddition().get("share_pwd").toString(), fileWatcher.getParentFileId());
+        List<String> list = listFileNamesInDirectory("/Downloads/" + fileWatcher.getFolderName());
         // 获取需要复制的文件列表
-        List<String> array = new ArrayList<>();
-        for (ShareFile file : shareFiles) {
-            // 在文件列表中查找名称匹配的文件
-            Optional<String> matchingFileId = fileItems.stream()
-                    .filter(item -> item.getName().equals(file.getName()))
-                    .map(FileItem::getFileId)
-                    .filter(fileId -> !fileId.isEmpty()) // 如果需要过滤掉空的fileId
-                    .findFirst();
+        for (FileSystem file : fileSystems) {
+            if (!list.contains(file.getName())) {
+                String rawUrl = aListClient.get(fileWatcher.getPath() + "/" + file.getName());
+                if (StringUtils.hasText(rawUrl)) {
+                    aria2Client.add(rawUrl, fileWatcher.getFolderName() + "/" + file.getName());
+                    stringBuilder.append("- ").append(file.getName()).append("\n");
+                }
 
-            if (matchingFileId.isEmpty()) {
-                array.add(file.getFileId());
-                stringBuilder.append("- ").append(file.getName()).append("\n");
             }
         }
         // 复制文件
-        aliYunDriveClient.copy(fileWatcher, s.getAddition().get("share_id").toString(), s.getAddition().get("share_pwd").toString(), array);
         pushDeerClient.ifPresent(notice -> {
-            if (notice.isTransfer() && !array.isEmpty()) {
+            if (notice.isTransfer() && stringBuilder.toString().contains("-")) {
                 pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s", stringBuilder));
             }
         });
     }
+
 }

@@ -23,14 +23,3 @@ Content-Type: application/json
   "folderName": "音乐",
   "storageId": 11
 }
-
-
-###
-
-POST  http://localhost:5245/api/v1/notice
-Content-Type: application/json;charset=UTF-8
-Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNzA3MzEwNTkyLCJuYmYiOjE3MDcxMzc3OTIsImlhdCI6MTcwNzEzNzc5Mn0.qhA9V7uDYzrAkR5zqGCillkUQiOewK1ZgeTHlda4Q7Y
-
-{
-  "pushKey": "PDU28226TYibFK0P7pf0u6kcBnlmiyasxkT2K4fzn"
-}

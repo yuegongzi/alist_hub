@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.ExpiringMap;
-import org.alist.hub.bean.FileWatcher;
 import org.alist.hub.bean.Response;
 import org.alist.hub.bean.ShareFile;
 import org.alist.hub.bo.AliYunDriveBO;
@@ -21,9 +20,7 @@ import org.alist.hub.util.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -129,41 +126,5 @@ public class AliYunDriveClient {
         return new ArrayList<>();
     }
 
-
-    /**
-     * 复制文件
-     *
-     * @param fileWatcher 文件监听器
-     * @param shareId     共享ID
-     * @param sharePwd    共享密码
-     * @param fileIds     文件ID列表
-     */
-    public void copy(FileWatcher fileWatcher, String shareId, String sharePwd, List<String> fileIds) {
-        List<Map<String, Object>> requests = new ArrayList<>();
-        for (int i = 0; i < fileIds.size(); i++) {
-            Map<String, Object> content = new HashMap<>();
-            Map<String, Object> body = new HashMap<>();
-            Map<String, Object> headers = new HashMap<>();
-            body.put("file_id", fileIds.get(i));
-            body.put("share_id", shareId);
-            body.put("auto_rename", true);
-            body.put("to_parent_file_id", fileWatcher.getToFileId());
-            body.put("to_drive_id", fileWatcher.getToDriveId());
-            headers.put("Content-Type", "application/json");
-            content.put("id", String.format("%s", i++));
-            content.put("method", "POST");
-            content.put("url", "/file/copy");
-            content.put("body", body);
-            content.put("headers", headers);
-            requests.add(content);
-        }
-        Payload payload = Payload.create("https://api.aliyundrive.com/adrive/v4/batch")
-                .addHeader("user-agent", Constants.USER_AGENT)
-                .addHeader("x-share-token", getShareToken(shareId, sharePwd).orElse(""))
-                .addHeader("Authorization", "Bearer " + getAccessToken())
-                .addBody("requests", requests)
-                .addBody("resource", "file");
-        http.post(payload).getStatusCode().is2xxSuccessful();
-    }
 
 }

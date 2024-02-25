@@ -1,6 +1,7 @@
 package org.alist.hub.util;
 
 import java.security.SecureRandom;
+import java.util.Random;
 
 public class RandomUtils {
 
@@ -23,5 +24,16 @@ public class RandomUtils {
         }
 
         return randomString.toString();
+    }
+
+    /**
+     * 生成一个随机的字符串作为唯一标识符
+     *
+     * @return 生成的随机字符串
+     */
+    public static String generateRandomId() {
+        Random random = new Random();
+        double randomId = random.nextDouble();
+        return String.valueOf(randomId);
     }
 }

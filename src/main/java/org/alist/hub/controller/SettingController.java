@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.AliYunDriveBO;
+import org.alist.hub.bo.Aria2BO;
 import org.alist.hub.bo.NoticeBO;
 import org.alist.hub.bo.PikPakBo;
 import org.alist.hub.configure.HubProperties;
@@ -174,4 +175,17 @@ public class SettingController {
         }
         Files.writeString(Path.of(hubProperties.getPath() + "/config.json"), JsonUtils.toJson(objectNode));
     }
+
+    @GetMapping("/aria2")
+    @SneakyThrows
+    public Aria2BO getAria2() {
+        return appConfigService.get(new Aria2BO(), Aria2BO.class).orElse(null);
+    }
+
+    @PutMapping("/aria2")
+    @SneakyThrows
+    public void updateAria2(@RequestBody Aria2BO aria2BO) {
+        appConfigService.saveOrUpdate(aria2BO);
+    }
+
 }
