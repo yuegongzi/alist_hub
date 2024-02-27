@@ -94,6 +94,7 @@ public class FileWatcherServiceImpl implements FileWatcherService {
      */
     @Override
     public void merge(String id) {
+        aria2Client.clear();
         // 根据ID查询AppConfig对象
         Optional<AppConfig> optionalAppConfig = appConfigRepository.findById(id);
         if (optionalAppConfig.isEmpty()) {

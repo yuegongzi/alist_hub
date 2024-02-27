@@ -7,6 +7,7 @@ import org.alist.hub.model.Storage;
 import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.service.StorageService;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +26,9 @@ public class StorageController {
 
     @GetMapping
     public Page<Storage> get(Storage storage, Query query) {
-        return storageRepository.findAll(Example.of(storage), query.of(Storage.class));
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withMatcher("mountPath", ExampleMatcher.GenericPropertyMatchers.contains());
+        return storageRepository.findAll(Example.of(storage, matcher), query.of(Storage.class));
     }
 
     @PostMapping
