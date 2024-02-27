@@ -43,14 +43,9 @@ public class FileWatcherServiceImpl implements FileWatcherService {
      */
     public static List<String> listFileNamesInDirectory(String directoryPath) {
         Path path = Paths.get(directoryPath);
-        // 检查目录是否存在，如果不存在则创建
+        // 检查目录是否存在
         if (!Files.exists(path)) {
-            try {
-                Files.createDirectories(path);
-                return new ArrayList<>(); // 新创建的目录是空的
-            } catch (IOException e) {
-                return new ArrayList<>(); // 出现异常时返回空列表
-            }
+            return new ArrayList<>(); // 新创建的目录是空的
         }
         // 尝试列出目录中的文件名称，过滤掉子目录
         try (var files = Files.list(path)) {
@@ -112,23 +107,23 @@ public class FileWatcherServiceImpl implements FileWatcherService {
         }
         FileWatcher fileWatcher = optionalFileWatcher.get();
         List<FileSystem> fileSystems = aListClient.fs(fileWatcher.getPath());
-        StringBuilder stringBuilder = new StringBuilder();
         List<String> list = listFileNamesInDirectory("/Downloads/" + fileWatcher.getFolderName());
+        boolean success = false;
         // 获取需要复制的文件列表
         for (FileSystem file : fileSystems) {
             if (!list.contains(file.getName())) {
                 String rawUrl = aListClient.get(fileWatcher.getPath() + "/" + file.getName());
                 if (StringUtils.hasText(rawUrl)) {
                     aria2Client.add(rawUrl, fileWatcher.getFolderName() + "/" + file.getName());
-                    stringBuilder.append("- ").append(file.getName()).append("\n");
+                    success = true;
                 }
 
             }
         }
-        // 复制文件
+        boolean finalSuccess = success;
         pushDeerClient.ifPresent(notice -> {
-            if (notice.isTransfer() && stringBuilder.toString().contains("-")) {
-                pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s", stringBuilder));
+            if (notice.isTransfer() && finalSuccess) {
+                pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s", fileWatcher.getFolderName()));
             }
         });
     }
