@@ -71,14 +71,14 @@ public class AListHubScheduler {
     /**
      * 定时任务，用于删除过期文件
      */
-    @Scheduled(initialDelay = 20 * 1000, fixedRate = 20 * 60 * 1000)
+    @Scheduled(initialDelay = 10 * 60 * 1000, fixedRate = 20 * 60 * 1000)
     public void deleteExpire() {
         Optional<AliYunFolderBO> aliYunFolderBO = appConfigService.get(new AliYunFolderBO(), AliYunFolderBO.class);
         aliYunFolderBO.ifPresent(yunFolderBO -> {
             List<FileItem> fileItemList = aliYunOpenClient.getFileList(yunFolderBO.getDriveId(), yunFolderBO.getFolderId());
             fileItemList.forEach(fileItem -> {
                 try {
-                    if (fileItem.getUpdatedAt().isBefore(LocalDateTime.now().minusHours(2))) {
+                    if (fileItem.getUpdatedAt().isBefore(LocalDateTime.now().minusHours(12))) {
                         boolean isSuccess = aliYunOpenClient.deleteFile(fileItem.getDriveId(), fileItem.getFileId());
                         if (isSuccess) {
                             log.info("delete file success, fileId:{}", fileItem.getFileId());
