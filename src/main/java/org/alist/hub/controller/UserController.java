@@ -81,4 +81,12 @@ public class UserController {
         });
         return map;
     }
+
+    /**
+     * 用户授权检查
+     */
+    @GetMapping("/authorized")
+    public void authorize() {
+
+    }
 }
