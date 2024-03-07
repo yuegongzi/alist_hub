@@ -86,11 +86,11 @@ public class StorageServiceImpl implements StorageService {
     @Override
     @Transactional
     public void resetStorage() {
+        // 删除数据库中存储ID小于4的存储实例和元数据
         storageRepository.deleteByIdLessThan(4L);
         // 更新存储驱动
         storageRepository.updateDriver("AliyundriveShare", "AliyundriveShare2Open");
-        // 删除数据库中存储ID小于4的存储实例和元数据
-        storageRepository.deleteByIdLessThanAndDisabled(Constants.MY_ALI_ID, true);
+//        storageRepository.deleteByIdLessThanAndDisabled(Constants.MY_ALI_ID, true);
         // 设置阿里云分享存储
         setAli();
         // 设置我的阿里云存储

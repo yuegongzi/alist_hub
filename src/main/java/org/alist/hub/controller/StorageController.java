@@ -36,7 +36,7 @@ public class StorageController {
         Optional<Storage> temp = storageRepository.findByMountPath(storage.getMountPath());
         temp.ifPresent(value -> storage.setId(value.getId()));
         storage.build();
-        storage.setDisabled(false);
+//        storage.setDisabled(false);
         storageService.flush(storage);
     }
 }
