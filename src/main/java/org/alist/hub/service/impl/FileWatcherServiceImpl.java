@@ -34,6 +34,7 @@ public class FileWatcherServiceImpl implements FileWatcherService {
     private final AppConfigRepository appConfigRepository;
     private final PushDeerClient pushDeerClient;
     private final AListClient aListClient;
+    private static boolean isRunning = false;
 
     /**
      * 获取指定目录下的所有文件名列表
@@ -94,6 +95,10 @@ public class FileWatcherServiceImpl implements FileWatcherService {
      */
     @Override
     public void merge(String id) {
+        if (isRunning) {
+            return;
+        }
+        isRunning = true;
         aria2Client.clear();
         // 根据ID查询AppConfig对象
         Optional<AppConfig> optionalAppConfig = appConfigRepository.findById(id);
@@ -109,24 +114,54 @@ public class FileWatcherServiceImpl implements FileWatcherService {
         FileWatcher fileWatcher = optionalFileWatcher.get();
         List<FileSystem> fileSystems = aListClient.fs(fileWatcher.getPath());
         List<String> list = listFileNamesInDirectory("/Downloads/" + fileWatcher.getFolderName());
-        boolean success = false;
         // 获取需要复制的文件列表
         for (FileSystem file : fileSystems) {
             if (!list.contains(file.getName())) {
                 String rawUrl = aListClient.get(fileWatcher.getPath() + "/" + file.getName());
                 if (StringUtils.hasText(rawUrl)) {
                     aria2Client.add(rawUrl, fileWatcher.getFolderName() + "/" + file.getName());
-                    success = true;
+                    waitForDownloadToComplete();
+                    pushDeerClient.ifPresent(notice -> {
+                        if (notice.isTransfer()) {
+                            pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s", fileWatcher.getFolderName()));
+                        }
+                    });
                 }
 
             }
         }
-        boolean finalSuccess = success;
-        pushDeerClient.ifPresent(notice -> {
-            if (notice.isTransfer() && finalSuccess) {
-                pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s", fileWatcher.getFolderName()));
-            }
-        });
+        isRunning = false;
     }
+
+    private void waitForDownloadToComplete() {
+        final int maxAttempts = 500; // 最大尝试次数，可以根据需要调整
+        final long sleepInterval = 2000; // 睡眠间隔，单位毫秒，也可以根据需要调整
+
+        int attempts = 0;
+        while (true) {
+            try {
+                Thread.sleep(sleepInterval);
+                attempts++;
+
+                if (aria2Client.active().isEmpty()) {
+                    break; // 如果下载完成，退出循环
+                }
+            } catch (InterruptedException e) {
+                // 重新设置中断状态
+                Thread.currentThread().interrupt();
+                // 记录日志时包含更多上下文信息
+                log.error("Download wait interrupted after " + attempts + " attempts", e);
+                break;
+            } catch (Exception e) {
+                // 增加了对异常类型的更细致的判断和处理
+                log.error("Error checking download status after " + attempts + " attempts", e);
+                if (attempts >= maxAttempts) {
+                    log.error("Exceeded maximum attempts, exiting loop.");
+                    break;
+                }
+            }
+        }
+    }
+
 
 }
