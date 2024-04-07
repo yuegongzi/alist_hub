@@ -99,36 +99,40 @@ public class FileWatcherServiceImpl implements FileWatcherService {
             return;
         }
         isRunning = true;
-        aria2Client.clear();
-        // 根据ID查询AppConfig对象
-        Optional<AppConfig> optionalAppConfig = appConfigRepository.findById(id);
-        if (optionalAppConfig.isEmpty()) {
-            throw new ServiceException("监听任务不存在");
-        }
-        AppConfig appConfig = optionalAppConfig.get();
-        // 将AppConfig对象的值转换为FileWatcher对象
-        Optional<FileWatcher> optionalFileWatcher = JsonUtils.readValue(appConfig.getValue(), FileWatcher.class);
-        if (optionalFileWatcher.isEmpty()) {
-            throw new ServiceException("数据转换失败");
-        }
-        FileWatcher fileWatcher = optionalFileWatcher.get();
-        List<FileSystem> fileSystems = aListClient.fs(fileWatcher.getPath());
-        List<String> list = listFileNamesInDirectory("/Downloads/" + fileWatcher.getFolderName());
-        // 获取需要复制的文件列表
-        for (FileSystem file : fileSystems) {
-            if (!list.contains(file.getName())) {
-                String rawUrl = aListClient.get(fileWatcher.getPath() + "/" + file.getName());
-                if (StringUtils.hasText(rawUrl)) {
-                    aria2Client.add(rawUrl, fileWatcher.getFolderName() + "/" + file.getName());
-                    waitForDownloadToComplete();
-                    pushDeerClient.ifPresent(notice -> {
-                        if (notice.isTransfer()) {
-                            pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s", fileWatcher.getFolderName()));
-                        }
-                    });
-                }
-
+        try {
+            aria2Client.clear();
+            // 根据ID查询AppConfig对象
+            Optional<AppConfig> optionalAppConfig = appConfigRepository.findById(id);
+            if (optionalAppConfig.isEmpty()) {
+                throw new ServiceException("监听任务不存在");
             }
+            AppConfig appConfig = optionalAppConfig.get();
+            // 将AppConfig对象的值转换为FileWatcher对象
+            Optional<FileWatcher> optionalFileWatcher = JsonUtils.readValue(appConfig.getValue(), FileWatcher.class);
+            if (optionalFileWatcher.isEmpty()) {
+                throw new ServiceException("数据转换失败");
+            }
+            FileWatcher fileWatcher = optionalFileWatcher.get();
+            List<FileSystem> fileSystems = aListClient.fs(fileWatcher.getPath());
+            List<String> list = listFileNamesInDirectory("/Downloads/" + fileWatcher.getFolderName());
+            // 获取需要复制的文件列表
+            for (FileSystem file : fileSystems) {
+                if (!list.contains(file.getName())) {
+                    String rawUrl = aListClient.get(fileWatcher.getPath() + "/" + file.getName());
+                    if (StringUtils.hasText(rawUrl)) {
+                        aria2Client.add(rawUrl, fileWatcher.getFolderName() + "/" + file.getName());
+                        waitForDownloadToComplete();
+                        pushDeerClient.ifPresent(notice -> {
+                            if (notice.isTransfer()) {
+                                pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s", fileWatcher.getFolderName()));
+                            }
+                        });
+                    }
+
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
         isRunning = false;
     }
