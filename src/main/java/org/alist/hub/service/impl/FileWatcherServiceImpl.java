@@ -124,7 +124,7 @@ public class FileWatcherServiceImpl implements FileWatcherService {
                         waitForDownloadToComplete();
                         pushDeerClient.ifPresent(notice -> {
                             if (notice.isTransfer()) {
-                                pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s", fileWatcher.getFolderName()));
+                                pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s\t%s", fileWatcher.getFolderName(), file.getName()));
                             }
                         });
                     }
