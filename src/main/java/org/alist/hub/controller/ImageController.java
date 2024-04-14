@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.util.retry.Retry;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -29,24 +28,25 @@ public class ImageController {
     @GetMapping("/{id}/image")
     @IgnoreResponseHandler
     public void image(@PathVariable("id") Long id, HttpServletResponse response) {
-        Optional<Movie> optionalMovie = movieRepository.findById(id);
-        if (optionalMovie.isPresent()) {
-            byte[] imageBytes = webClient.get()
-                    .uri(optionalMovie.get().getImageUrl())
-                    .header("User-Agent", Constants.USER_AGENT)
-                    .retrieve()
-                    .bodyToMono(byte[].class)
-                    .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
-                    .block();
+        try {
+            Optional<Movie> optionalMovie = movieRepository.findById(id);
+            if (optionalMovie.isPresent()) {
+                byte[] imageBytes = webClient.get()
+                        .uri(optionalMovie.get().getImageUrl())
+                        .header("User-Agent", Constants.USER_AGENT)
+                        .retrieve()
+                        .bodyToMono(byte[].class)
+                        .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
+                        .block();
 
-            if (imageBytes != null) {
-                response.setContentType("image/webp");
-                try {
+                if (imageBytes != null) {
+                    response.setContentType("image/webp");
                     response.getOutputStream().write(imageBytes);
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
                 }
             }
+        } catch (Exception e) {
+            log.error("下载图片出错");
         }
+
     }
 }
