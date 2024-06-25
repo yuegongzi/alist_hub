@@ -95,7 +95,7 @@ public class AListServiceImpl implements AListService {
             // 指定下载文件路径
             String path = Constants.DATA_DIR + "/" + file;
             // 下载文件
-            http.downloadFile(Payload.create(Constants.XIAOYA_BASE_URL + "/update/" + file), path).block();
+            http.downloadFile(Payload.create(Constants.XIAOYA_BASE_URL + file), path).block();
             // 解压缩文件
             ZipUtils.unzipFile(Path.of(path), Path.of(unzipPath));
         } catch (Exception e) {
