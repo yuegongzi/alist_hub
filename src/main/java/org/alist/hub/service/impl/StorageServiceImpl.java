@@ -8,6 +8,7 @@ import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.bo.AliYunFolderBO;
 import org.alist.hub.bo.AliYunOpenBO;
 import org.alist.hub.bo.PikPakBo;
+import org.alist.hub.bo.QuarkBO;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.external.AListClient;
 import org.alist.hub.model.Meta;
@@ -210,6 +211,34 @@ public class StorageServiceImpl implements StorageService {
         }
     }
 
+    /**
+     * 设置Quark存储的cookie信息。
+     * 该方法遍历所有驱动为QuarkShare的存储对象，如果找到相应的QuarkBO配置，
+     * 则将cookie信息更新到这些存储对象的附加信息中，并保存更新。
+     *
+     * @Transactional 注解确保该方法的操作作为一个事务执行，确保数据的一致性。
+     */
+    @Transactional
+    public void setQuark() {
+        // 查找所有驱动为QuarkShare的存储信息
+        List<Storage> storages = storageRepository.findAllByDriver("QuarkShare");
+        // 尝试获取QuarkBO配置
+        Optional<QuarkBO> quarkBO = appConfigService.get(new QuarkBO(), QuarkBO.class);
+        // 如果QuarkBO配置不存在，则直接返回，不进行后续操作
+        if (quarkBO.isEmpty()) {
+            return;
+        }
+        // 遍历所有找到的存储信息
+        for (Storage storage : storages) {
+            // 创建一个HashMap来更新存储的附加信息，基于当前存储的附加信息
+            Map<String, Object> addition = new HashMap<>(storage.getAddition());
+            // 将QuarkBO中的cookie信息添加到附加信息中
+            addition.put("cookie", quarkBO.get().getCookie());
+            // 更新存储的附加信息，并立即保存
+            storage.setAddition(addition);
+            storageRepository.saveAndFlush(storage);
+        }
+    }
 
     /**
      * 刷新存储信息。
@@ -227,10 +256,10 @@ public class StorageServiceImpl implements StorageService {
                 Optional<PikPakBo> pikPakBo = appConfigService.get(new PikPakBo(), PikPakBo.class);
                 if (pikPakBo.isPresent()) {
                     // 更新存储附加信息，添加PikPakBo中的用户名和密码
-                    Map<String, Object> ad1 = new HashMap<>(storage.getAddition());
-                    ad1.put("username", pikPakBo.get().getUsername());
-                    ad1.put("password", pikPakBo.get().getPassword());
-                    storage.setAddition(ad1);
+                    Map<String, Object> addition = new HashMap<>(storage.getAddition());
+                    addition.put("username", pikPakBo.get().getUsername());
+                    addition.put("password", pikPakBo.get().getPassword());
+                    storage.setAddition(addition);
                     // 将更新后的存储信息保存或更新到aListClient
                     aListClient.addOrUpdate(storage);
                 }
@@ -241,12 +270,12 @@ public class StorageServiceImpl implements StorageService {
                 Optional<AliYunFolderBO> aliYunFolderBO = appConfigService.get(new AliYunFolderBO(), AliYunFolderBO.class);
                 if (aliYunOpenBO.isPresent() && aliYunDriveBO.isPresent() && aliYunFolderBO.isPresent()) {
                     // 更新存储附加信息，添加阿里云盘的RefreshToken、开放平台RefreshToken及临时传输文件夹ID
-                    Map<String, Object> ad2 = new HashMap<>(storage.getAddition());
-                    ad2.put("RefreshToken", aliYunDriveBO.get().getRefreshToken());
-                    ad2.put("RefreshTokenOpen", aliYunOpenBO.get().getRefreshToken());
-                    ad2.put("TempTransferFolderID", aliYunFolderBO.get().getFolderId());
-                    ad2.put("rorb", "r");
-                    storage.setAddition(ad2);
+                    Map<String, Object> addition = new HashMap<>(storage.getAddition());
+                    addition.put("RefreshToken", aliYunDriveBO.get().getRefreshToken());
+                    addition.put("RefreshTokenOpen", aliYunOpenBO.get().getRefreshToken());
+                    addition.put("TempTransferFolderID", aliYunFolderBO.get().getFolderId());
+                    addition.put("rorb", "r");
+                    storage.setAddition(addition);
                     // 将更新后的存储信息保存或更新到aListClient
                     aListClient.addOrUpdate(storage);
                 }
@@ -254,13 +283,24 @@ public class StorageServiceImpl implements StorageService {
             case "AliyundriveOpen":
                 if (aliYunOpenBO.isPresent()) {
                     // 更新存储附加信息，添加阿里云开放平台的AccessToken和RefreshToken
-                    Map<String, Object> ad3 = new HashMap<>(storage.getAddition());
-                    ad3.put("AccessToken", aliYunOpenBO.get().getAccessToken());
-                    ad3.put("refresh_token", aliYunOpenBO.get().getRefreshToken());
-                    storage.setAddition(ad3);
+                    Map<String, Object> addition = new HashMap<>(storage.getAddition());
+                    addition.put("AccessToken", aliYunOpenBO.get().getAccessToken());
+                    addition.put("refresh_token", aliYunOpenBO.get().getRefreshToken());
+                    storage.setAddition(addition);
                     // 将更新后的存储信息保存或更新到aListClient
                     aListClient.addOrUpdate(storage);
                 }
+                break;
+            case "QuarkShare":
+                Optional<QuarkBO> quarkBO = appConfigService.get(new QuarkBO(), QuarkBO.class);
+                if (quarkBO.isPresent()) {
+                    Map<String, Object> addition = new HashMap<>(storage.getAddition());
+                    addition.put("cookie", quarkBO.get().getCookie());
+                    storage.setAddition(addition);
+                    // 将更新后的存储信息保存或更新到aListClient
+                    aListClient.addOrUpdate(storage);
+                }
+                break;
             default:
                 // 若未匹配到特定驱动类型，直接将存储信息保存或更新到aListClient
                 aListClient.addOrUpdate(storage);

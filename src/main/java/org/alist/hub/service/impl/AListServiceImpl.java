@@ -22,6 +22,7 @@ import org.springframework.util.FileCopyUtils;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Optional;
 
@@ -44,7 +45,10 @@ public class AListServiceImpl implements AListService {
             byte[] bytes = FileCopyUtils.copyToByteArray(classPathResource.getInputStream());
             String conf = new String(bytes, StandardCharsets.UTF_8);
             Files.writeString(Path.of("/etc/nginx/http.d/default.conf"), conf, StandardCharsets.UTF_8);
-            stopNginx();
+            Path path = Paths.get("/run/nginx/nginx.pid");
+            if (Files.exists(path)) {
+                stopNginx();
+            }
             CommandUtils.execute(new ProcessBuilder("nginx"));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -133,7 +137,7 @@ public class AListServiceImpl implements AListService {
     @Override
     public boolean checkUpdate() {
         // 获取最新版本号
-        String version = http.get(Payload.create(Constants.XIAOYA_BASE_URL + "/version.txt")).getBody();
+        String version = http.get(Payload.create(Constants.XIAOYA_BASE_URL + "version.txt")).getBody();
         version = version.replaceAll("[\n\r]+", "");
 
         // 查询已安装版本号

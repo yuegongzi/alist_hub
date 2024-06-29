@@ -10,6 +10,7 @@ import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.bo.Aria2BO;
 import org.alist.hub.bo.NoticeBO;
 import org.alist.hub.bo.PikPakBo;
+import org.alist.hub.bo.QuarkBO;
 import org.alist.hub.configure.HubProperties;
 import org.alist.hub.dto.AccountDTO;
 import org.alist.hub.dto.SecurityDTO;
@@ -133,6 +134,14 @@ public class SettingController {
                 storages = storageRepository.findAllByDriver("PikPakShare");
                 storages.forEach(storageService::flush);
                 break;
+            case "quark":
+                Object cookie = account.getParams().get("cookie");
+                QuarkBO quarkBO = new QuarkBO();
+                quarkBO.setCookie(cookie.toString());
+                appConfigService.saveOrUpdate(quarkBO);
+                storages = storageRepository.findAllByDriver("QuarkShare");
+                storages.forEach(storageService::flush);
+                break;
             default:
                 throw new ServiceException("未知类型");
         }
@@ -143,10 +152,12 @@ public class SettingController {
         Optional<AliYunDriveBO> al = appConfigService.get(new AliYunDriveBO(), AliYunDriveBO.class);
         Optional<PikPakBo> pk = appConfigService.get(new PikPakBo(), PikPakBo.class);
         Optional<NoticeBO> notice = appConfigService.get(new NoticeBO(), NoticeBO.class);
+        Optional<QuarkBO> quark = appConfigService.get(new QuarkBO(), QuarkBO.class);
         AccountVO accountVO = new AccountVO();
         accountVO.setPikpak(pk.map(PikPakBo::getUsername).orElse(null));
         accountVO.setUsername(al.map(AliYunDriveBO::getUserName).orElse(null));
         accountVO.setPushKey(notice.map(NoticeBO::getPushKey).orElse(null));
+        accountVO.setQuark(quark.map(QuarkBO::getCookie).orElse(null));
         return accountVO;
     }
 

@@ -26,7 +26,9 @@ public class NoticeController {
     public NoticeBO get() {
         Optional<NoticeBO> noticeBO = appConfigService.get(new NoticeBO(), NoticeBO.class);
         if (noticeBO.isEmpty()) {
-            throw new ServiceException(ResultCode.NOT_FOUND);
+            NoticeBO bo = new NoticeBO();
+            appConfigService.saveOrUpdate(bo);
+            return bo;
         }
         return noticeBO.get();
     }

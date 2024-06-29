@@ -7,4 +7,5 @@ public class AccountVO {
     private String username;
     private String pikpak;
     private String pushKey;
+    private String quark;
 }
