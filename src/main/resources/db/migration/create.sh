@@ -2,12 +2,10 @@
 
 # 函数：检查并创建目录
 create_dir_with_check() {
-    dir=$1
-    if [ -d "$dir" ]; then
-        echo "目标目录 $dir 已存在，正在删除..."
-        rm -rf "$dir"
-    fi
-    mkdir -p "$dir"
+   local dir=$1
+       if [ ! -d "$dir" ]; then
+           mkdir -p "$dir"
+       fi
 }
 
 # 创建目录
