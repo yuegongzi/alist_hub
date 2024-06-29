@@ -102,7 +102,7 @@ public class AListServiceImpl implements AListService {
             // 下载文件
             http.downloadFile(Payload.create(Constants.XIAOYA_BASE_URL + file), path).block();
             // 解压缩文件
-            ZipUtils.unzipFile(Path.of(path), Path.of(unzipPath));
+            ZipUtils.unzip(path, unzipPath);
         } catch (Exception e) {
             // 打印异常信息
             log.error(e.getMessage(), e);

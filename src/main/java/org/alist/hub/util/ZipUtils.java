@@ -1,25 +1,44 @@
 package org.alist.hub.util;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class ZipUtils {
-    public static void unzipFile(Path zipFilePath, Path destDirectory) throws IOException, InterruptedException {
-        // 检查目标目录是否存在，如果不存在则创建
-        if (!Files.exists(destDirectory)) {
-            Files.createDirectories(destDirectory);
+    public static void unzip(String zipFilePath, String destDir) throws IOException {
+        File destDirFile = new File(destDir);
+        if (!destDirFile.exists()) {
+            destDirFile.mkdirs();
         }
-        // 构建解压命令
-        ProcessBuilder pb = new ProcessBuilder("unzip", "-o", "-d", destDirectory.toString(), zipFilePath.toString());
-        // 设置错误流和输出流重定向到当前进程的标准输出和标准错误（便于查看运行结果）
-        pb.redirectErrorStream(true);
-        // 启动子进程执行解压命令
-        Process process = pb.start();
-        // 等待进程执行完成，并读取其输出（可选，通常用于调试或者获取解压过程信息）
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            throw new RuntimeException("Failed to unzip file. Exit code: " + exitCode);
+        try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(zipFilePath))) {
+            ZipEntry entry = zipIn.getNextEntry();
+            while (entry != null) {
+                String filePath = destDir + File.separator + entry.getName();
+                if (!entry.isDirectory()) {
+                    // If the entry is a file, extracts it
+                    extractFile(zipIn, filePath);
+                } else {
+                    // If the entry is a directory, make the directory
+                    File dir = new File(filePath);
+                    dir.mkdirs();
+                }
+                zipIn.closeEntry();
+                entry = zipIn.getNextEntry();
+            }
+        }
+    }
+
+    private static void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) {
+            byte[] bytesIn = new byte[4096];
+            int read;
+            while ((read = zipIn.read(bytesIn)) != -1) {
+                bos.write(bytesIn, 0, read);
+            }
         }
     }
 }
