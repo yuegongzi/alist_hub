@@ -69,6 +69,7 @@ public class AListServiceImpl implements AListService {
      */
     @Override
     public boolean startAList() {
+        System.out.println("调用启动命令");
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
