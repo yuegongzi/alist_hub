@@ -4,8 +4,20 @@
 create_dir_with_check() {
    local dir=$1
        if [ ! -d "$dir" ]; then
+           echo "目录 $dir 不存在，正在创建..."
            mkdir -p "$dir"
        fi
+}
+
+# 移动并覆盖文件前检查是否存在
+move_with_check() {
+    src=$1
+    dest=$2
+    if [ -e "$dest" ]; then
+        echo "目标 $dest 已存在，正在删除..."
+        rm -rf "$dest"
+    fi
+    mv "$src" "$dest"
 }
 
 # 创建目录
@@ -18,16 +30,7 @@ create_dir_with_check "/etc/nginx/http.d"
 rm -rf /var/lib/data
 unzip /var/lib/data.zip -d /var/lib/data
 
-# 移动并覆盖文件前检查是否存在
-move_with_check() {
-    src=$1
-    dest=$2
-    if [ -e "$dest" ]; then
-        echo "目标 $dest 已存在，正在删除..."
-        rm -rf "$dest"
-    fi
-    mv "$src" "$dest"
-}
+
 
 # 移动并覆盖文件前检查是否存在
 move_with_check "/var/lib/data/header.html" "/www/cgi-bin/header.html"
@@ -49,3 +52,5 @@ mv /var/lib/data/emby* /etc/nginx/http.d
 
 # 启动 HTTP 服务器
 /bin/busybox-extras httpd -p 81 -h /www
+
+echo "脚本文件执行完成"
