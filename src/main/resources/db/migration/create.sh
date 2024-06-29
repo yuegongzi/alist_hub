@@ -52,5 +52,3 @@ mv /var/lib/data/emby* /etc/nginx/http.d
 
 # 启动 HTTP 服务器
 /bin/busybox-extras httpd -p 81 -h /www
-
-echo "脚本文件执行完成"

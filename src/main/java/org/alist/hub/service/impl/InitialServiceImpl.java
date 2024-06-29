@@ -57,7 +57,6 @@ public class InitialServiceImpl implements InitialService {
             createScript();
             // 如果appConfigService已经初始化，则进行以下操作
             if (appConfigService.isInitialized()) {
-                System.out.println("已经初始化......");
                 // 解压缩index.zip文件到/index目录
                 ZipUtils.unzip(Constants.DATA_DIR + "/index.zip", "/index");
                 // 解压缩tvbox.zip文件到/www目录
