@@ -91,7 +91,7 @@ public class StorageServiceImpl implements StorageService {
         storageRepository.deleteByIdLessThan(4L);
         // 更新存储驱动
         storageRepository.updateDriver("AliyundriveShare", "AliyundriveShare2Open");
-//        storageRepository.deleteByIdLessThanAndDisabled(Constants.MY_ALI_ID, true);
+        setQuark();
         // 设置阿里云分享存储
         setAli();
         // 设置我的阿里云存储
@@ -106,7 +106,7 @@ public class StorageServiceImpl implements StorageService {
     @Transactional
     @Override
     public void removeExpire() {
-        // 删除数据库中存储ID小于且已禁用的存储实例和元数据
+        // 删除数据库中存储ID小于且未禁用的存储实例和元数据
         storageRepository.deleteByIdLessThanAndDisabled(Constants.MY_ALI_ID, false);
         // 更新数据库中存储ID小于4的元数据的隐藏属性为1
         metaRepository.updateHideLessThan(4, "1");
