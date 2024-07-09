@@ -1,5 +1,6 @@
 package org.alist.hub.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,23 +8,28 @@ import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.XiaoYaBo;
 import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
+import org.alist.hub.configure.HubProperties;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.SearchNodeService;
 import org.alist.hub.service.StorageService;
 import org.alist.hub.util.CommandUtils;
+import org.alist.hub.util.JsonUtils;
+import org.alist.hub.util.ReplaceUtils;
 import org.alist.hub.util.StringUtils;
 import org.alist.hub.util.ZipUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -37,6 +43,7 @@ public class AListServiceImpl implements AListService {
     private final StorageService storageService;
     private final SearchNodeService searchNodeService;
     private final Http http;
+    private final HubProperties hubProperties;
 
     @Override
     public void startNginx() {
@@ -69,6 +76,14 @@ public class AListServiceImpl implements AListService {
      */
     @Override
     public boolean startAList() {
+        try {
+            String config = Files.readString(Path.of(hubProperties.getPath() + "/config.json"));
+            JsonNode jsonNode = JsonUtils.readTree(config);
+            updateTvBox(jsonNode.findPath("site_url").asText());
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
@@ -162,4 +177,15 @@ public class AListServiceImpl implements AListService {
         return false;
     }
 
+    @Override
+    public void updateTvBox(String site) {
+        try {
+            List<Path> files = ReplaceUtils.findJsonFiles(Path.of("/www/tvbox"));
+            files.forEach(file -> {
+                ReplaceUtils.replaceString(file, "DOCKER_ADDRESS", site);
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

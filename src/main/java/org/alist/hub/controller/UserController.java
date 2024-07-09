@@ -8,6 +8,7 @@ import org.alist.hub.bean.SpaceInfo;
 import org.alist.hub.bean.UserClaims;
 import org.alist.hub.bo.AliYunSignBO;
 import org.alist.hub.dto.PasswordDTO;
+import org.alist.hub.external.AListClient;
 import org.alist.hub.external.AliYunDriveClient;
 import org.alist.hub.external.AliYunOpenClient;
 import org.alist.hub.model.User;
@@ -33,6 +34,7 @@ public class UserController {
     private final AliYunDriveClient aliYunDriveClient;
     private final AliYunOpenClient aliYunOpenClient;
     private final AppConfigService appConfigService;
+    private final AListClient aListClient;
 
     @PutMapping("/password")
     public void update(@RequestBody @Valid PasswordDTO passwordDTO) {
@@ -50,6 +52,7 @@ public class UserController {
         User u = user.get();
         u.setPassword(passwordDTO.getNewPassword());
         userRepository.save(u);
+        aListClient.clear();
     }
 
     /**

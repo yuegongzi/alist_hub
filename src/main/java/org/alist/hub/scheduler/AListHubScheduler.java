@@ -7,6 +7,7 @@ import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileItem;
 import org.alist.hub.bo.AliYunFolderBO;
 import org.alist.hub.bo.AliYunSignBO;
+import org.alist.hub.external.AListClient;
 import org.alist.hub.external.AliYunDriveClient;
 import org.alist.hub.external.AliYunOpenClient;
 import org.alist.hub.external.PushDeerClient;
@@ -17,9 +18,11 @@ import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.FileWatcherService;
 import org.alist.hub.service.SearchNodeService;
 import org.alist.hub.util.DateTimeUtils;
+import org.alist.hub.util.ReplaceUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +39,7 @@ public class AListHubScheduler {
     private final SearchNodeService searchNodeService;
     private final AppConfigRepository appConfigRepository;
     private final FileWatcherService fileWatcherService;
+    private final AListClient aListClient;
 
     @Scheduled(cron = "0 17 9 * * ?")
     public void sign() {
@@ -99,5 +103,10 @@ public class AListHubScheduler {
         appConfigs.forEach(appConfig -> {
             fileWatcherService.merge(appConfig.getId());
         });
+    }
+
+    @Scheduled(initialDelay = 10 * 60 * 1000, fixedRate = 60 * 60 * 1000)
+    public void replace() {
+        ReplaceUtils.replaceString(Path.of("/www/tvbox/libs/alist.min.js"), "ALIST_AUTH", aListClient.getToken());
     }
 }

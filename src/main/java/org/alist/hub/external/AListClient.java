@@ -43,16 +43,7 @@ public class AListClient {
     }
 
     private Payload create(String path) {
-        String token = expiringMap.get("token");
-        if (token == null) {
-            Optional<User> user = userRepository.findByUsername("admin");
-            if (user.isEmpty()) {
-                throw new ServiceException("账户不存在");
-            }
-            token = this.auth(user.get().getUsername(), user.get().getPassword());
-            expiringMap.put("token", token, 7200000);
-        }
-        return Payload.create(Constants.ALIST_BASE_URL + path).addHeader("Authorization", token);
+        return Payload.create(Constants.ALIST_BASE_URL + path).addHeader("Authorization", getToken());
 
     }
 
@@ -160,4 +151,39 @@ public class AListClient {
             });
         }
     }
+
+    public void clear() {
+        expiringMap.remove("token");
+    }
+
+    /**
+     * 获取令牌（Token）。
+     * 本方法首先尝试从一个具有过期时间的映射中获取令牌。如果令牌不存在，
+     * 则尝试根据固定用户名“admin”查找用户。如果用户不存在，抛出服务异常。
+     * 如果用户存在，通过认证方法生成新令牌，并将其与7200000毫秒（即7200秒）的过期时间一起存入映射中。
+     * 最后返回生成或获取的令牌。
+     *
+     * @return 当前有效的令牌字符串。
+     * @throws ServiceException 如果用户名“admin”不存在时抛出，表示账户不存在。
+     */
+    public String getToken() {
+        // 尝试从expiringMap中获取当前的令牌
+        String token = expiringMap.get("token");
+        // 如果当前没有令牌，则需要进行认证并生成新令牌
+        if (token == null) {
+            // 根据用户名“admin”查找用户
+            Optional<User> user = userRepository.findByUsername("admin");
+            // 如果用户不存在，则抛出异常
+            if (user.isEmpty()) {
+                throw new ServiceException("账户不存在");
+            }
+            // 对用户进行认证，并生成新令牌
+            token = this.auth(user.get().getUsername(), user.get().getPassword());
+            // 将新生成的令牌及其过期时间存入expiringMap中
+            expiringMap.put("token", token, 7200000);
+        }
+        // 返回当前有效的令牌
+        return token;
+    }
+
 }

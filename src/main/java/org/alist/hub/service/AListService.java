@@ -35,4 +35,6 @@ public interface AListService {
      * @return boolean
      */
     boolean checkUpdate();
+
+    void updateTvBox(String site);
 }

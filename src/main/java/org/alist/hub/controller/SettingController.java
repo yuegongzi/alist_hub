@@ -22,6 +22,7 @@ import org.alist.hub.model.User;
 import org.alist.hub.repository.AppConfigRepository;
 import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.repository.UserRepository;
+import org.alist.hub.service.AListService;
 import org.alist.hub.service.AliYunDriveService;
 import org.alist.hub.service.AliYunOpenService;
 import org.alist.hub.service.AppConfigService;
@@ -57,6 +58,7 @@ public class SettingController {
     private final StorageService storageService;
     private final AListClient aListClient;
     private final HubProperties hubProperties;
+    private final AListService aListService;
 
     @GetMapping("/security")
     public List<SecurityDTO> getSecurity() {
@@ -185,6 +187,7 @@ public class SettingController {
             objectNode.put("site_url", configVO.getSiteUrl());
         }
         Files.writeString(Path.of(hubProperties.getPath() + "/config.json"), JsonUtils.toJson(objectNode));
+        aListService.updateTvBox(configVO.getSiteUrl());
     }
 
     @GetMapping("/aria2")
