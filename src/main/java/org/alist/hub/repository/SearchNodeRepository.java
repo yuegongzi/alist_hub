@@ -9,6 +9,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface SearchNodeRepository extends CrudRepository<SearchNode, Long>, PagingAndSortingRepository<SearchNode, Long>, JpaRepository<SearchNode, Long> {
 
@@ -16,4 +18,6 @@ public interface SearchNodeRepository extends CrudRepository<SearchNode, Long>, 
 
     @Query("SELECT e FROM SearchNode e WHERE (:keyword IS NULL OR e.name LIKE CONCAT('%', :keyword, '%' ))")
     Page<SearchNode> findAllByKeyword(String keyword, Pageable pageable);
+
+    List<SearchNode> findByNameAndParent(String name, String parent);
 }

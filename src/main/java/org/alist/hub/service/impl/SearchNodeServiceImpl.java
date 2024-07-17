@@ -149,7 +149,10 @@ public class SearchNodeServiceImpl implements SearchNodeService {
         searchNode.setSize(0L);
         searchNode.setParent(pathInfo.path());
         searchNode.setName(pathInfo.name());
-        searchNodeList.add(searchNode);
+        List<SearchNode> searchNodes = searchNodeRepository.findByNameAndParent(searchNode.getName(), searchNode.getParent());
+        if (searchNodes.isEmpty()) {//相同parent、name的节点过滤掉
+            searchNodeList.add(searchNode);
+        }
     }
 
     private void handleLine(String content) {
