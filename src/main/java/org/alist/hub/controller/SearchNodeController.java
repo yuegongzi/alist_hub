@@ -24,7 +24,7 @@ public class SearchNodeController {
     @GetMapping
     public Page<SearchNode> get(@RequestParam("s") String s, Query query) {
         List<Condition> conditions = Collections.singletonList(
-                Condition.of((root, cb) -> cb.like(root.get("name"), s), StringUtils.hasText(s))
+                Condition.of((root, cb) -> cb.like(root.get("name"), "%" + s + "%"), StringUtils.hasText(s))
         );
         return searchNodeService.findAll(SearchNode.class, conditions, query.of(SearchNode.class));
     }

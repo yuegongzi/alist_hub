@@ -80,9 +80,9 @@ public class SettingController {
         switch (securityDTO.getLabel()) {
             case "ali":
                 if (securityDTO.getValue()) {
-                    aListClient.disable(Constants.MY_ALI_ID);
-                } else {
                     aListClient.enable(Constants.MY_ALI_ID);
+                } else {
+                    aListClient.disable(Constants.MY_ALI_ID);
                 }
                 break;
             case "tvbox":
@@ -103,15 +103,13 @@ public class SettingController {
 
     @PutMapping("/ali")
     public void updateAli(@RequestBody @Valid AccountDTO account) {
-        List<Storage> storages;
         switch (account.getType()) {
             case "drive":
                 String status = aliYunDriveService.authorize(account.getParams());
                 if (!"CONFIRMED".equals(status)) {
                     throw new ServiceException("校验失败");
                 }
-                storages = storageService.findAllByDriver("AliyundriveShare2Open");
-                storages.forEach(storageService::flush);
+                updateStorage("AliyundriveShare2Open");
                 break;
             case "openapi":
                 if (account.getParams().containsKey("url")) {
@@ -119,13 +117,27 @@ public class SettingController {
                 } else {
                     throw new IllegalArgumentException("参数url未填写");
                 }
-                storages = storageService.findAllByDriver("AliyundriveShare2Open");
                 storageService.findById(Constants.MY_ALI_ID).ifPresent(storageService::flush);
-                storages.forEach(storageService::flush);
+                updateStorage("AliyundriveShare2Open");
                 break;
             default:
                 throw new ServiceException("未知类型");
         }
+    }
+
+    private void updateStorage(String driver) {
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        // 提交一个任务
+        executorService.submit(() -> {
+            try {
+                Thread.sleep(2000);
+                List<Storage> storages = storageService.findAllByDriver(driver);
+                storages.forEach(storageService::flush);
+            } catch (InterruptedException e) {
+                log.error(e.getMessage(), e);
+            }
+
+        });
     }
 
     @GetMapping("/ali")
@@ -196,20 +208,7 @@ public class SettingController {
             c.setGroup(Constants.ALIST_GROUP);
         }
         appConfigService.save(c);
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
-        // 提交一个任务
-        executorService.submit(() -> {
-            try {
-                Thread.sleep(2000);
-                List<Storage> storages = storageService.findAllByDriver(id);
-                storages.forEach(storageService::flush);
-            } catch (InterruptedException e) {
-                log.error(e.getMessage(), e);
-            }
-
-        });
-        // 关闭线程池
-        executorService.shutdown();
+        updateStorage(id);
     }
 
 }

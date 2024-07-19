@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 
@@ -214,5 +215,33 @@ public class JsonUtils {
         }
     }
 
+    /**
+     * 合并两个JSON节点。
+     * <p>
+     * 此方法用于将updateNode中的所有字段合并到mainNode中。如果mainNode中已存在某个字段，
+     * 且该字段在两个节点中都是对象，则递归合并这两个对象。否则，用updateNode中的值覆盖mainNode中的值。
+     * 注意，此方法只处理字段的合并，并不处理数组类型的合并。
+     *
+     * @param mainNode   原始JSON节点，将被updateNode中的字段合并。
+     * @param updateNode 更新用的JSON节点，其字段将被合并到mainNode中。
+     * @return 合并后的JSON节点，即mainNode经过更新后的结果。
+     */
 
+    public static JsonNode mergeJsonNodes(JsonNode mainNode, JsonNode updateNode) {
+        // 遍历 updateNode 的字段
+        updateNode.fieldNames().forEachRemaining(fieldName -> {
+            JsonNode value = updateNode.get(fieldName);
+            // 如果 updateNode 中的字段有值（存在该字段），则覆盖 mainNode 中的值
+            if (value != null && !value.isNull()) {
+                // 如果 mainNode 中的值是一个对象并且 updateNode 中的值也是一个对象，则递归合并
+                if (mainNode.has(fieldName) && mainNode.get(fieldName).isObject() && value.isObject()) {
+                    mergeJsonNodes(mainNode.get(fieldName), value);
+                } else {
+                    // 否则，使用 updateNode 的值覆盖 mainNode 的值
+                    ((ObjectNode) mainNode).set(fieldName, value);
+                }
+            }
+        });
+        return mainNode;
+    }
 }

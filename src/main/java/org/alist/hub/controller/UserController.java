@@ -3,6 +3,7 @@ package org.alist.hub.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.alist.hub.bean.DriveInfo;
 import org.alist.hub.bean.SpaceInfo;
 import org.alist.hub.bean.UserClaims;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.rmi.ServerException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -59,16 +61,20 @@ public class UserController {
      * 获取用户签到列表
      */
     @GetMapping("/sign")
+    @SneakyThrows
     public JsonNode sign() {
         AliYunDriveBO aliYunDriveBO = new AliYunDriveBO();
         Optional<AliYunDriveBO> optional = appConfigService.get(aliYunDriveBO, AliYunDriveBO.class);
-        if (optional.isEmpty() || optional.get().getResult() == null) {
-            JsonNode jsonNode = aliYunDriveClient.sign();
-            aliYunDriveBO.setResult(jsonNode);
-            appConfigService.saveOrUpdate(aliYunDriveBO);
-            return jsonNode;
+        if (optional.isPresent()) {
+            if (optional.get().getResult() == null || optional.get().getResult().isEmpty()) {
+                JsonNode jsonNode = aliYunDriveClient.sign();
+                aliYunDriveBO.setResult(jsonNode);
+                appConfigService.saveOrUpdate(aliYunDriveBO);
+                return jsonNode;
+            }
+            return optional.get().getResult();
         }
-        return optional.get().getResult();
+        throw new ServerException("未配置阿里云盘");
     }
 
     @GetMapping()

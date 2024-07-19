@@ -1,5 +1,6 @@
 package org.alist.hub.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
@@ -41,8 +42,16 @@ public class AppConfigServiceImpl extends GenericServiceImpl<AppConfig, String> 
     @Transactional(rollbackOn = Exception.class)
     public void saveOrUpdate(Persistent persistent) {
         AppConfig appConfig = new AppConfig();
+        Optional<AppConfig> store = findById(persistent.getId());
+        if (store.isPresent()) {
+            JsonNode mainNode = JsonUtils.readTree(store.get().getValue());
+            JsonNode updateNode = JsonUtils.readTree(persistent.getValue());
+            JsonNode mergeNode = JsonUtils.mergeJsonNodes(mainNode, updateNode);
+            appConfig.setValue(JsonUtils.toJson(mergeNode));
+        } else {
+            appConfig.setValue(persistent.getValue());
+        }
         appConfig.setId(persistent.getId());
-        appConfig.setValue(persistent.getValue());
         appConfig.setGroup(Constants.ALIST_GROUP);
         save(appConfig);
     }
