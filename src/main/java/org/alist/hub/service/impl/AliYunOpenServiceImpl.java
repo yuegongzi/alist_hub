@@ -4,11 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileInfo;
-import org.alist.hub.bean.Response;
-import org.alist.hub.bo.AliYunFolderBO;
 import org.alist.hub.bo.AliYunOpenBO;
 import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
+import org.alist.hub.client.Response;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.external.AliYunOpenClient;
 import org.alist.hub.service.AliYunOpenService;
@@ -46,20 +45,18 @@ public class AliYunOpenServiceImpl implements AliYunOpenService {
             AliYunOpenBO aliYunOpenBO = optional.get();
             // 更新ExpiresIn字段的值
             aliYunOpenBO.setExpiresIn(aliYunOpenBO.getExpiresIn() * 900 + System.currentTimeMillis());//少存一点时间
-            appConfigService.saveOrUpdate(aliYunOpenBO);
             // 在根目录创建文件夹
             Optional<FileInfo> fileInfo = aliYunOpenClient.createFolder(Constants.FILE_NAME, "resource", "root");
             // 检查文件夹创建是否成功
             if (fileInfo.isEmpty()) {
                 throw new ServiceException("创建文件夹失败");
             }
-            // 创建阿里云文件夹对象
-            AliYunFolderBO aliyunFolderBo = new AliYunFolderBO();
-            aliyunFolderBo.setName(fileInfo.get().getFileName());
-            aliyunFolderBo.setFolderId(fileInfo.get().getFileId());
-            aliyunFolderBo.setDriveId(fileInfo.get().getDriveId());
+            aliYunOpenBO.setName(fileInfo.get().getFileName());
+            aliYunOpenBO.setName(fileInfo.get().getFileName());
+            aliYunOpenBO.setFolderId(fileInfo.get().getFileId());
+            aliYunOpenBO.setDriveId(fileInfo.get().getDriveId());
             // 保存或更新配置信息
-            appConfigService.saveOrUpdate(aliyunFolderBo);
+            appConfigService.saveOrUpdate(aliYunOpenBO);
 
         }
     }

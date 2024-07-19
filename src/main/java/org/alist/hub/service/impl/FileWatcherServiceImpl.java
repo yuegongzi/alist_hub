@@ -10,7 +10,7 @@ import org.alist.hub.external.AListClient;
 import org.alist.hub.external.Aria2Client;
 import org.alist.hub.external.PushDeerClient;
 import org.alist.hub.model.AppConfig;
-import org.alist.hub.repository.AppConfigRepository;
+import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.FileWatcherService;
 import org.alist.hub.util.JsonUtils;
 import org.alist.hub.util.RandomUtils;
@@ -30,11 +30,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Slf4j
 public class FileWatcherServiceImpl implements FileWatcherService {
+    private static boolean isRunning = false;
     private final Aria2Client aria2Client;
-    private final AppConfigRepository appConfigRepository;
+    private final AppConfigService appConfigService;
     private final PushDeerClient pushDeerClient;
     private final AListClient aListClient;
-    private static boolean isRunning = false;
 
     /**
      * 获取指定目录下的所有文件名列表
@@ -77,7 +77,7 @@ public class FileWatcherServiceImpl implements FileWatcherService {
         appConfig.setGroup(Constants.WATCHER_GROUP);
         appConfig.setId(RandomUtils.generateRandomString(32));
         appConfig.setValue(JsonUtils.toJson(fileWatcher));
-        appConfigRepository.save(appConfig);
+        appConfigService.save(appConfig);
         new Thread(() -> {
             try {
                 Thread.sleep(5000);
@@ -102,7 +102,7 @@ public class FileWatcherServiceImpl implements FileWatcherService {
         try {
             aria2Client.clear();
             // 根据ID查询AppConfig对象
-            Optional<AppConfig> optionalAppConfig = appConfigRepository.findById(id);
+            Optional<AppConfig> optionalAppConfig = appConfigService.findById(id);
             if (optionalAppConfig.isEmpty()) {
                 throw new ServiceException("监听任务不存在");
             }

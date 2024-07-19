@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public interface Persistent {
     /**
-     * 获取存入数据库的ID(同时也是文件名称)
+     * 获取存入数据库的ID
      *
      * @return String
      */

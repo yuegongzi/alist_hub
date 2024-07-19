@@ -6,15 +6,14 @@ import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.DriveInfo;
 import org.alist.hub.bean.FileInfo;
 import org.alist.hub.bean.FileItem;
-import org.alist.hub.bean.Response;
 import org.alist.hub.bean.SpaceInfo;
 import org.alist.hub.bo.AliYunOpenBO;
 import org.alist.hub.bo.Persistent;
 import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
+import org.alist.hub.client.Response;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.AppConfig;
-import org.alist.hub.repository.AppConfigRepository;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.util.JsonUtils;
 import org.springframework.stereotype.Component;
@@ -31,7 +30,6 @@ import java.util.Optional;
 @AllArgsConstructor
 @Slf4j
 public class AliYunOpenClient {
-    private final AppConfigRepository appConfigRepository;
     private final AppConfigService appConfigService;
     private final Http http;
 
@@ -62,7 +60,7 @@ public class AliYunOpenClient {
      */
     private String getAccessToken() {
         Persistent persistent = new AliYunOpenBO();
-        Optional<AppConfig> appConfig = appConfigRepository.findById(persistent.getId());  // 根据persistent的id获取App配置
+        Optional<AppConfig> appConfig = appConfigService.findById(persistent.getId());  // 根据persistent的id获取App配置
         if (appConfig.isEmpty()) {  // 如果App配置为空
             throw new ServiceException("获取token失败");
         }
@@ -109,7 +107,7 @@ public class AliYunOpenClient {
      * 创建文件
      *
      * @param name           文件名
-     * @param type          类型 backup | resource
+     * @param type           类型 backup | resource
      * @param parent_file_id 父文件ID
      * @return 返回一个Mono类型的文件信息
      */
@@ -147,13 +145,13 @@ public class AliYunOpenClient {
      * 删除文件
      *
      * @param driveId 驱动ID
-     * @param fileId 文件ID
+     * @param fileId  文件ID
      * @return 删除是否成功
      */
     public boolean deleteFile(String driveId, String fileId) {
         return http.post(createPayload("/adrive/v1.0/openFile/delete")
                 .addBody("drive_id", driveId)
-                .addBody("file_id", fileId)).getStatusCode().is2xxSuccessful();
+                .addBody("file_id", fileId)).responseEntity().getStatusCode().is2xxSuccessful();
     }
 
 }

@@ -32,6 +32,7 @@ public interface AListService {
 
     /**
      * 更新前的准备
+     *
      * @return boolean
      */
     boolean checkUpdate();

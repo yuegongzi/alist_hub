@@ -6,17 +6,17 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
-import org.alist.hub.bean.Response;
 import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
+import org.alist.hub.client.Response;
 import org.alist.hub.dto.InitializeDTO;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.User;
-import org.alist.hub.repository.UserRepository;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AliYunDriveService;
 import org.alist.hub.service.AliYunOpenService;
 import org.alist.hub.service.AppConfigService;
+import org.alist.hub.service.UserService;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +40,7 @@ public class OpenController {
     private final AppConfigService appConfigService;
     private final AliYunDriveService aliYunDriveService;
     private final AliYunOpenService aliYunOpenService;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     /**
      * 获取授权二维码
@@ -119,11 +119,11 @@ public class OpenController {
             throw new ServiceException("从服务器下载更新文件失败, 请检查服务器网络是否通畅");
         }
         appConfigService.initialize();
-        Optional<User> user = userRepository.findByUsername("admin");
+        Optional<User> user = userService.findByUsername("admin");
         user.map(u -> {
             u.setDisabled(0);
             u.setPassword(initializeDTO.getPassword());
-            return userRepository.save(u);
+            return userService.save(u);
         });
         aListService.update();
 

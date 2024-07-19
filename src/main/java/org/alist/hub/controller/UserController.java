@@ -6,14 +6,14 @@ import lombok.AllArgsConstructor;
 import org.alist.hub.bean.DriveInfo;
 import org.alist.hub.bean.SpaceInfo;
 import org.alist.hub.bean.UserClaims;
-import org.alist.hub.bo.AliYunSignBO;
+import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.dto.PasswordDTO;
 import org.alist.hub.external.AListClient;
 import org.alist.hub.external.AliYunDriveClient;
 import org.alist.hub.external.AliYunOpenClient;
 import org.alist.hub.model.User;
-import org.alist.hub.repository.UserRepository;
 import org.alist.hub.service.AppConfigService;
+import org.alist.hub.service.UserService;
 import org.alist.hub.util.RequestContextUtil;
 import org.alist.hub.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +30,7 @@ import java.util.Optional;
 @RequestMapping("/user")
 @AllArgsConstructor
 public class UserController {
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final AliYunDriveClient aliYunDriveClient;
     private final AliYunOpenClient aliYunOpenClient;
     private final AppConfigService appConfigService;
@@ -42,7 +42,7 @@ public class UserController {
             throw new IllegalArgumentException("两次输入密码不一致");
         }
         UserClaims userClaims = RequestContextUtil.getUserClaims();
-        Optional<User> user = userRepository.findByUsername(userClaims.getUsername());
+        Optional<User> user = userService.findByUsername(userClaims.getUsername());
         if (user.isEmpty()) {
             throw new IllegalArgumentException("用户不存在");
         }
@@ -51,7 +51,7 @@ public class UserController {
         }
         User u = user.get();
         u.setPassword(passwordDTO.getNewPassword());
-        userRepository.save(u);
+        userService.save(u);
         aListClient.clear();
     }
 
@@ -60,12 +60,12 @@ public class UserController {
      */
     @GetMapping("/sign")
     public JsonNode sign() {
-        AliYunSignBO aliYunSignBO = new AliYunSignBO();
-        Optional<AliYunSignBO> optional = appConfigService.get(aliYunSignBO, AliYunSignBO.class);
-        if (optional.isEmpty()) {
+        AliYunDriveBO aliYunDriveBO = new AliYunDriveBO();
+        Optional<AliYunDriveBO> optional = appConfigService.get(aliYunDriveBO, AliYunDriveBO.class);
+        if (optional.isEmpty() || optional.get().getResult() == null) {
             JsonNode jsonNode = aliYunDriveClient.sign();
-            aliYunSignBO.setResult(jsonNode);
-            appConfigService.saveOrUpdate(aliYunSignBO);
+            aliYunDriveBO.setResult(jsonNode);
+            appConfigService.saveOrUpdate(aliYunDriveBO);
             return jsonNode;
         }
         return optional.get().getResult();

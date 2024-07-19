@@ -1,7 +1,7 @@
 package org.alist.hub.service.impl;
 
+import jakarta.annotation.Resource;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileSystem;
@@ -10,10 +10,10 @@ import org.alist.hub.external.AListClient;
 import org.alist.hub.model.Movie;
 import org.alist.hub.model.SearchNode;
 import org.alist.hub.model.Storage;
-import org.alist.hub.repository.MovieRepository;
 import org.alist.hub.repository.SearchNodeRepository;
-import org.alist.hub.repository.StorageRepository;
+import org.alist.hub.service.MovieService;
 import org.alist.hub.service.SearchNodeService;
+import org.alist.hub.service.StorageService;
 import org.alist.hub.util.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -30,20 +30,27 @@ import java.util.stream.Stream;
 
 @Service
 @Slf4j
-@AllArgsConstructor
-public class SearchNodeServiceImpl implements SearchNodeService {
-    private final SearchNodeRepository searchNodeRepository;
-    private final AListClient aListClient;
+public class SearchNodeServiceImpl extends GenericServiceImpl<SearchNode, Long> implements SearchNodeService {
     private static final List<SearchNode> searchNodeList = new ArrayList<>();
     private static final List<Movie> movieList = new ArrayList<>();
-    private final MovieRepository movieRepository;
-    private final StorageRepository storageRepository;
+    private final SearchNodeRepository repository;
+    @Resource
+    private AListClient aListClient;
+    @Resource
+    private MovieService movieService;
+    @Resource
+    private StorageService storageService;
+
+    public SearchNodeServiceImpl(SearchNodeRepository repository) {
+        super(repository);
+        this.repository = repository;
+    }
 
     @Override
     @Transactional
     public void build() {
-        List<Storage> list = storageRepository.findAllByIdGreaterThan(Constants.MY_ALI_ID - 1L);
-        searchNodeRepository.deleteByType(2);
+        List<Storage> list = storageService.findAllByIdGreaterThan(Constants.MY_ALI_ID - 1L);
+        repository.deleteByType(2);
         new Thread(() -> {
             list.forEach(storage -> {
                 execute(storage.getMountPath());
@@ -74,7 +81,7 @@ public class SearchNodeServiceImpl implements SearchNodeService {
 
                 }
             }
-            searchNodeRepository.saveAllAndFlush(searchNodes);
+            saveAllAndFlush(searchNodes);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -85,8 +92,8 @@ public class SearchNodeServiceImpl implements SearchNodeService {
     @Override
     @Transactional
     public void update() {
-        movieRepository.deleteAll();
-        searchNodeRepository.deleteByType(1);
+        movieService.deleteAll();
+        repository.deleteByType(1);
         List<Path> paths = listFiles("/index");
         long now = System.currentTimeMillis();
         // 遍历文件路径列表并逐行处理文件内容
@@ -95,11 +102,11 @@ public class SearchNodeServiceImpl implements SearchNodeService {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (searchNodeList.size() >= 500) {
-                        searchNodeRepository.saveAllAndFlush(searchNodeList);
+                        repository.saveAllAndFlush(searchNodeList);
                         searchNodeList.clear();
                     }
                     if (movieList.size() >= 500) {
-                        movieRepository.saveAllAndFlush(movieList);
+                        movieService.saveAllAndFlush(movieList);
                         movieList.clear();
                     }
                     if (line.contains("/")) {
@@ -107,11 +114,11 @@ public class SearchNodeServiceImpl implements SearchNodeService {
                     }
                 }
                 if (!searchNodeList.isEmpty()) {
-                    searchNodeRepository.saveAllAndFlush(searchNodeList);
+                    repository.saveAllAndFlush(searchNodeList);
                     searchNodeList.clear();
                 }
                 if (!movieList.isEmpty()) {
-                    movieRepository.saveAllAndFlush(movieList);
+                    movieService.saveAllAndFlush(movieList);
                     movieList.clear();
                 }
             } catch (IOException e) {
@@ -149,7 +156,7 @@ public class SearchNodeServiceImpl implements SearchNodeService {
         searchNode.setSize(0L);
         searchNode.setParent(pathInfo.path());
         searchNode.setName(pathInfo.name());
-        List<SearchNode> searchNodes = searchNodeRepository.findByNameAndParent(searchNode.getName(), searchNode.getParent());
+        List<SearchNode> searchNodes = repository.findByNameAndParent(searchNode.getName(), searchNode.getParent());
         if (searchNodes.isEmpty()) {//相同parent、name的节点过滤掉
             searchNodeList.add(searchNode);
         }

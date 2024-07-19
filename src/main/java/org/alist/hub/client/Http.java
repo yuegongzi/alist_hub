@@ -1,11 +1,12 @@
 package org.alist.hub.client;
 
 import lombok.AllArgsConstructor;
-import org.alist.hub.bean.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -15,9 +16,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.concurrent.TimeoutException;
 
 @Component
 @AllArgsConstructor
+@Slf4j
 public class Http {
 
     private final WebClient webClient;
@@ -29,19 +32,27 @@ public class Http {
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
                 .toEntity(String.class)
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
-                .block(Duration.ofSeconds(30)));
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                        .filter(this::isTimeoutException))
+                .block(Duration.ofSeconds(30))
+        );
+    }
+
+    private boolean isTimeoutException(Throwable throwable) {
+        // 可以根据具体情况调整异常类型
+        return throwable instanceof WebClientRequestException || throwable instanceof TimeoutException;
     }
 
     // POST请求
     public Response post(Payload payload) {
         return Response.of(webClient.post()
                 .uri(payload.getUri())
-                .bodyValue(payload.getBody())
+                .bodyValue(payload.getBodyValue())
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
                 .toEntity(String.class)
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                        .filter(this::isTimeoutException))
                 .block(Duration.ofSeconds(30))
         );
     }
@@ -53,20 +64,24 @@ public class Http {
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
                 .toEntity(String.class)
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
-                .block(Duration.ofSeconds(30)));
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                        .filter(this::isTimeoutException))
+                .block(Duration.ofSeconds(30))
+        );
     }
 
     // PUT请求
     public Response put(Payload payload) {
         return Response.of(webClient.put()
                 .uri(payload.getUri())
-                .bodyValue(payload.getBody())
+                .bodyValue(payload.getBodyValue())
                 .headers(h -> h.addAll(payload.getHeaders()))
                 .retrieve()
                 .toEntity(String.class)
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)))
-                .block(Duration.ofSeconds(30)));
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                        .filter(this::isTimeoutException))
+                .block(Duration.ofSeconds(30))
+        );
     }
 
     // 下载文件
@@ -75,7 +90,8 @@ public class Http {
                 .uri(payload.getUri())
                 .retrieve()
                 .bodyToFlux(DataBuffer.class)
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(2)));
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                        .filter(this::isTimeoutException));
         try {
             Path path = Paths.get(targetPath);
             DataBufferUtils.write(dataBuffer, path)

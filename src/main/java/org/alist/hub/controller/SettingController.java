@@ -8,9 +8,6 @@ import lombok.SneakyThrows;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.bo.Aria2BO;
-import org.alist.hub.bo.NoticeBO;
-import org.alist.hub.bo.PikPakBo;
-import org.alist.hub.bo.QuarkBO;
 import org.alist.hub.configure.HubProperties;
 import org.alist.hub.dto.AccountDTO;
 import org.alist.hub.dto.SecurityDTO;
@@ -19,20 +16,19 @@ import org.alist.hub.external.AListClient;
 import org.alist.hub.model.AppConfig;
 import org.alist.hub.model.Storage;
 import org.alist.hub.model.User;
-import org.alist.hub.repository.AppConfigRepository;
-import org.alist.hub.repository.StorageRepository;
-import org.alist.hub.repository.UserRepository;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AliYunDriveService;
 import org.alist.hub.service.AliYunOpenService;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.StorageService;
+import org.alist.hub.service.UserService;
 import org.alist.hub.util.JsonUtils;
 import org.alist.hub.util.RandomUtils;
 import org.alist.hub.util.StringUtils;
 import org.alist.hub.vo.AccountVO;
 import org.alist.hub.vo.ConfigVO;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,12 +45,10 @@ import java.util.Optional;
 @RequestMapping("/setting")
 @AllArgsConstructor
 public class SettingController {
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final AppConfigService appConfigService;
-    private final AppConfigRepository appConfigRepository;
     private final AliYunDriveService aliYunDriveService;
     private final AliYunOpenService aliYunOpenService;
-    private final StorageRepository storageRepository;
     private final StorageService storageService;
     private final AListClient aListClient;
     private final HubProperties hubProperties;
@@ -63,8 +57,8 @@ public class SettingController {
     @GetMapping("/security")
     public List<SecurityDTO> getSecurity() {
         List<SecurityDTO> securityDTOList = new ArrayList<>();
-        Optional<User> optional = userRepository.findByUsername("guest");
-        Optional<Storage> ali = storageRepository.findById(Constants.MY_ALI_ID);
+        Optional<User> optional = userService.findByUsername("guest");
+        Optional<Storage> ali = storageService.findById(Constants.MY_ALI_ID);
         if (optional.isPresent()) {
             User user = optional.get();
             boolean value = user.getDisabled() != null && user.getDisabled() != 0;
@@ -73,7 +67,7 @@ public class SettingController {
             securityDTOList.add(new SecurityDTO(false, "guest"));
         }
         securityDTOList.add(new SecurityDTO(ali.map(Storage::isDisabled).orElse(false), "ali"));
-        securityDTOList.add(new SecurityDTO(appConfigRepository.findById(Constants.TV_BOX_TOKEN).isPresent(), "tvbox"));
+        securityDTOList.add(new SecurityDTO(appConfigService.findById(Constants.TV_BOX_TOKEN).isPresent(), "tvbox"));
         return securityDTOList;
     }
 
@@ -93,9 +87,9 @@ public class SettingController {
                 appConfig.setGroup(0);
                 if (securityDTO.getValue()) {
                     appConfig.setValue(RandomUtils.generateRandomString(64));
-                    appConfigRepository.save(appConfig);
+                    appConfigService.save(appConfig);
                 } else {
-                    appConfigRepository.deleteById(appConfig.getId());
+                    appConfigService.deleteById(appConfig.getId());
                 }
                 break;
             default:
@@ -103,8 +97,8 @@ public class SettingController {
         }
     }
 
-    @PutMapping("/account")
-    public void updateAccount(@RequestBody @Valid AccountDTO account) {
+    @PutMapping("/ali")
+    public void updateAli(@RequestBody @Valid AccountDTO account) {
         List<Storage> storages;
         switch (account.getType()) {
             case "drive":
@@ -112,7 +106,7 @@ public class SettingController {
                 if (!"CONFIRMED".equals(status)) {
                     throw new ServiceException("校验失败");
                 }
-                storages = storageRepository.findAllByDriver("AliyundriveShare2Open");
+                storages = storageService.findAllByDriver("AliyundriveShare2Open");
                 storages.forEach(storageService::flush);
                 break;
             case "openapi":
@@ -121,27 +115,8 @@ public class SettingController {
                 } else {
                     throw new IllegalArgumentException("参数url未填写");
                 }
-                storages = storageRepository.findAllByDriver("AliyundriveShare2Open");
-                storageRepository.findById(Constants.MY_ALI_ID).ifPresent(storageService::flush);
-                storages.forEach(storageService::flush);
-                break;
-            case "pikpak":
-                Map<String, Object> params = account.getParams();
-                if (params.containsKey("username") && params.containsKey("password")) {
-                    PikPakBo pikPakBo = new PikPakBo();
-                    pikPakBo.setPassword(params.get("password").toString());
-                    pikPakBo.setUsername(params.get("username").toString());
-                    appConfigService.saveOrUpdate(pikPakBo);
-                }
-                storages = storageRepository.findAllByDriver("PikPakShare");
-                storages.forEach(storageService::flush);
-                break;
-            case "quark":
-                Object cookie = account.getParams().get("cookie");
-                QuarkBO quarkBO = new QuarkBO();
-                quarkBO.setCookie(cookie.toString());
-                appConfigService.saveOrUpdate(quarkBO);
-                storages = storageRepository.findAllByDriver("QuarkShare");
+                storages = storageService.findAllByDriver("AliyundriveShare2Open");
+                storageService.findById(Constants.MY_ALI_ID).ifPresent(storageService::flush);
                 storages.forEach(storageService::flush);
                 break;
             default:
@@ -149,17 +124,11 @@ public class SettingController {
         }
     }
 
-    @GetMapping("/account")
-    public AccountVO getAccount() {
+    @GetMapping("/ali")
+    public AccountVO getAli() {
         Optional<AliYunDriveBO> al = appConfigService.get(new AliYunDriveBO(), AliYunDriveBO.class);
-        Optional<PikPakBo> pk = appConfigService.get(new PikPakBo(), PikPakBo.class);
-        Optional<NoticeBO> notice = appConfigService.get(new NoticeBO(), NoticeBO.class);
-        Optional<QuarkBO> quark = appConfigService.get(new QuarkBO(), QuarkBO.class);
         AccountVO accountVO = new AccountVO();
-        accountVO.setPikpak(pk.map(PikPakBo::getUsername).orElse(null));
         accountVO.setUsername(al.map(AliYunDriveBO::getUserName).orElse(null));
-        accountVO.setPushKey(notice.map(NoticeBO::getPushKey).orElse(null));
-        accountVO.setQuark(quark.map(QuarkBO::getCookie).orElse(null));
         return accountVO;
     }
 
@@ -200,6 +169,31 @@ public class SettingController {
     @SneakyThrows
     public void updateAria2(@RequestBody Aria2BO aria2BO) {
         appConfigService.saveOrUpdate(aria2BO);
+    }
+
+    @GetMapping("/drive/{id}")
+    @SneakyThrows
+    public Map<String, Object> getDrive(@PathVariable("id") String id) {
+        return appConfigService.get(id);
+    }
+
+    @PutMapping("/drive/{id}")
+    @SneakyThrows
+    public void updateDrive(@PathVariable("id") String id, @RequestBody Map<String, Object> params) {
+        Optional<AppConfig> appConfig = appConfigService.findById(id);
+        AppConfig c;
+        if (appConfig.isPresent()) {
+            c = appConfig.get();
+            c.setValue(JsonUtils.toJson(params));
+        } else {
+            c = new AppConfig();
+            c.setValue(JsonUtils.toJson(params));
+            c.setId(id);
+            c.setGroup(Constants.ALIST_GROUP);
+        }
+        appConfigService.save(c);
+        List<Storage> storages = storageService.findAllByDriver(id);
+        storages.forEach(storageService::flush);
     }
 
 }

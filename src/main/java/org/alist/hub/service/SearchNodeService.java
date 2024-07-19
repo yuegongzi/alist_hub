@@ -1,6 +1,8 @@
 package org.alist.hub.service;
 
-public interface SearchNodeService {
+import org.alist.hub.model.SearchNode;
+
+public interface SearchNodeService extends GenericService<SearchNode, Long> {
 
     void build();
 

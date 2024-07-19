@@ -1,7 +1,6 @@
 package org.alist.hub.service.impl;
 
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.Persistent;
@@ -11,18 +10,21 @@ import org.alist.hub.service.AppConfigService;
 import org.alist.hub.util.JsonUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 @Slf4j
-@AllArgsConstructor
-public class AppConfigServiceImpl implements AppConfigService {
-    private final AppConfigRepository appConfigRepository;
+public class AppConfigServiceImpl extends GenericServiceImpl<AppConfig, String> implements AppConfigService {
 
+    public AppConfigServiceImpl(AppConfigRepository repository) {
+        super(repository);
+    }
 
     @Override
     public boolean isInitialized() {
-        Optional<AppConfig> appConfig = appConfigRepository.findById(Constants.APP_INIT);
+        Optional<AppConfig> appConfig = findById(Constants.APP_INIT);
         return appConfig.map(a -> a.getValue().equals("true")).orElse(false);
     }
 
@@ -32,7 +34,7 @@ public class AppConfigServiceImpl implements AppConfigService {
         appConfig.setValue("true");
         appConfig.setId(Constants.APP_INIT);
         appConfig.setGroup(Constants.APP_GROUP);
-        appConfigRepository.save(appConfig);
+        save(appConfig);
     }
 
     @Override
@@ -42,21 +44,30 @@ public class AppConfigServiceImpl implements AppConfigService {
         appConfig.setId(persistent.getId());
         appConfig.setValue(persistent.getValue());
         appConfig.setGroup(Constants.ALIST_GROUP);
-        appConfigRepository.save(appConfig);
+        save(appConfig);
     }
 
     @Override
     @Transactional(rollbackOn = Exception.class)
     public void remove(Persistent persistent) {
-        appConfigRepository.deleteById(persistent.getId());
+        deleteById(persistent.getId());
     }
 
     @Override
     public <T> Optional<T> get(Persistent persistent, Class<T> clazz) {
-        Optional<AppConfig> appConfig = appConfigRepository.findById(persistent.getId());
+        Optional<AppConfig> appConfig = findById(persistent.getId());
         if (appConfig.isPresent()) {
             return JsonUtils.readValue(appConfig.get().getValue(), clazz);
         }
         return Optional.empty();
+    }
+
+    @Override
+    public Map<String, Object> get(String id) {
+        Optional<AppConfig> appConfig = findById(id);
+        if (appConfig.isPresent()) {
+            return JsonUtils.toMap(appConfig.get().getValue());
+        }
+        return new HashMap<>();
     }
 }

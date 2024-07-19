@@ -6,10 +6,11 @@ import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileWatcher;
 import org.alist.hub.dto.FileWatcherDTO;
 import org.alist.hub.model.AppConfig;
-import org.alist.hub.repository.AppConfigRepository;
+import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.FileWatcherService;
 import org.alist.hub.util.JsonUtils;
 import org.alist.hub.vo.FileWatcherVO;
+import org.springframework.data.domain.Example;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +28,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class FileWatcherController {
     private final FileWatcherService fileWatcherService;
-    private final AppConfigRepository appConfigRepository;
+    private final AppConfigService appConfigService;
 
     @PostMapping
     public void post(@RequestBody @Valid FileWatcherDTO fileWatcher) {
@@ -36,12 +37,14 @@ public class FileWatcherController {
 
     @GetMapping
     public List<FileWatcherVO> get() {
-        return toVO(appConfigRepository.findAllByGroup(Constants.WATCHER_GROUP));
+        AppConfig appConfig = new AppConfig();
+        appConfig.setGroup(Constants.WATCHER_GROUP);
+        return toVO(appConfigService.findAll(Example.of(appConfig)));
     }
 
     @DeleteMapping("{id}")
     public void delete(@PathVariable("id") String id) {
-        appConfigRepository.deleteById(id);
+        appConfigService.deleteById(id);
     }
 
     private List<FileWatcherVO> toVO(List<AppConfig> appConfigs) {

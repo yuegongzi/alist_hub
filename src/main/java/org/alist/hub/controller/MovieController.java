@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Query;
 import org.alist.hub.model.Movie;
-import org.alist.hub.repository.MovieRepository;
+import org.alist.hub.service.MovieService;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 @Slf4j
 public class MovieController {
-    private final MovieRepository movieRepository;
+    private final MovieService movieService;
 
     @GetMapping
     public Page<Movie> get(Movie movie, Query query) {
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withMatcher("name", ExampleMatcher.GenericPropertyMatchers.contains());
-        return movieRepository.findAll(Example.of(movie, matcher), query.of(Movie.class));
+        return movieService.findAll(Example.of(movie, matcher), query.of(Movie.class));
     }
 
 }

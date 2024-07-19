@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.alist.hub.bean.Query;
 import org.alist.hub.model.Storage;
-import org.alist.hub.repository.StorageRepository;
 import org.alist.hub.service.StorageService;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -21,22 +20,22 @@ import java.util.Optional;
 @RequestMapping("/storage")
 @AllArgsConstructor
 public class StorageController {
-    private final StorageRepository storageRepository;
     private final StorageService storageService;
 
     @GetMapping
     public Page<Storage> get(Storage storage, Query query) {
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withMatcher("mountPath", ExampleMatcher.GenericPropertyMatchers.contains());
-        return storageRepository.findAll(Example.of(storage, matcher), query.of(Storage.class));
+        return storageService.findAll(Example.of(storage, matcher), query.of(Storage.class));
     }
 
     @PostMapping
     public void add(@RequestBody @Valid Storage storage) {
-        Optional<Storage> temp = storageRepository.findByMountPath(storage.getMountPath());
+        Storage s = new Storage();
+        s.setMountPath(storage.getMountPath());
+        Optional<Storage> temp = storageService.findOne(Example.of(s));
         temp.ifPresent(value -> storage.setId(value.getId()));
         storage.build();
-//        storage.setDisabled(false);
         storageService.flush(storage);
     }
 }

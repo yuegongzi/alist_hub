@@ -7,13 +7,13 @@ import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.ExpiringMap;
 import org.alist.hub.bean.FileSystem;
 import org.alist.hub.bean.FileSystemResp;
-import org.alist.hub.bean.Response;
 import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
+import org.alist.hub.client.Response;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.model.Storage;
 import org.alist.hub.model.User;
-import org.alist.hub.repository.UserRepository;
+import org.alist.hub.service.UserService;
 import org.alist.hub.util.JsonUtils;
 import org.springframework.stereotype.Component;
 
@@ -25,9 +25,9 @@ import java.util.Optional;
 @AllArgsConstructor
 @Slf4j
 public class AListClient {
-    private final Http http;
     private final static ExpiringMap<String, String> expiringMap = new ExpiringMap<>();
-    private final UserRepository userRepository;
+    private final Http http;
+    private final UserService userService;
 
     // 判断接口返回结果是否成功
     private JsonNode isSuccess(JsonNode body) {
@@ -172,7 +172,7 @@ public class AListClient {
         // 如果当前没有令牌，则需要进行认证并生成新令牌
         if (token == null) {
             // 根据用户名“admin”查找用户
-            Optional<User> user = userRepository.findByUsername("admin");
+            Optional<User> user = userService.findByUsername("admin");
             // 如果用户不存在，则抛出异常
             if (user.isEmpty()) {
                 throw new ServiceException("账户不存在");

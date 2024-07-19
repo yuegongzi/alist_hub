@@ -14,6 +14,9 @@ public class AliYunOpenBO implements Persistent {
     private Long expiresIn;
     @JsonProperty("token_type")
     private String tokenType;
+    private String folderId;
+    private String driveId;
+    private String name;
 
     @Override
     public String getId() {
