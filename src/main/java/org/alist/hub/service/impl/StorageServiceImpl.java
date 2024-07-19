@@ -181,7 +181,6 @@ public class StorageServiceImpl extends GenericServiceImpl<Storage, Long> implem
     public void flush(Storage storage) {
         // 获取阿里云开放平台基本信息
         Optional<AliYunOpenBO> aliYunOpenBO = appConfigService.get(new AliYunOpenBO(), AliYunOpenBO.class);
-
         switch (storage.getDriver()) {
             case "AliyundriveShare2Open":
                 // 获取阿里云盘相关配置信息
@@ -194,8 +193,6 @@ public class StorageServiceImpl extends GenericServiceImpl<Storage, Long> implem
                     addition.put("TempTransferFolderID", aliYunOpenBO.get().getFolderId());
                     addition.put("rorb", "r");
                     storage.setAddition(addition);
-                    // 将更新后的存储信息保存或更新到aListClient
-                    aListClient.addOrUpdate(storage);
                 }
                 break;
             case "AliyundriveOpen":
@@ -205,8 +202,6 @@ public class StorageServiceImpl extends GenericServiceImpl<Storage, Long> implem
                     addition.put("AccessToken", aliYunOpenBO.get().getAccessToken());
                     addition.put("refresh_token", aliYunOpenBO.get().getRefreshToken());
                     storage.setAddition(addition);
-                    // 将更新后的存储信息保存或更新到aListClient
-                    aListClient.addOrUpdate(storage);
                 }
                 break;
             default:
@@ -214,8 +209,9 @@ public class StorageServiceImpl extends GenericServiceImpl<Storage, Long> implem
                 Map<String, Object> addition = new HashMap<>(storage.getAddition());
                 addition.putAll(config);
                 storage.setAddition(addition);
-                aListClient.addOrUpdate(storage);
+
         }
+        aListClient.addOrUpdate(storage);
     }
 
     @Override

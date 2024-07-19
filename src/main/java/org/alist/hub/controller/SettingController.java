@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.bo.Aria2BO;
@@ -40,10 +41,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @RestController
 @RequestMapping("/setting")
 @AllArgsConstructor
+@Slf4j
 public class SettingController {
     private final UserService userService;
     private final AppConfigService appConfigService;
@@ -192,8 +196,20 @@ public class SettingController {
             c.setGroup(Constants.ALIST_GROUP);
         }
         appConfigService.save(c);
-        List<Storage> storages = storageService.findAllByDriver(id);
-        storages.forEach(storageService::flush);
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        // 提交一个任务
+        executorService.submit(() -> {
+            try {
+                Thread.sleep(2000);
+                List<Storage> storages = storageService.findAllByDriver(id);
+                storages.forEach(storageService::flush);
+            } catch (InterruptedException e) {
+                log.error(e.getMessage(), e);
+            }
+
+        });
+        // 关闭线程池
+        executorService.shutdown();
     }
 
 }
