@@ -3,7 +3,7 @@ package org.alist.hub.external;
 import lombok.AllArgsConstructor;
 import org.alist.hub.bean.DownloadInfo;
 import org.alist.hub.bo.Aria2BO;
-import org.alist.hub.client.Http;
+import org.alist.hub.client.HttpUtil;
 import org.alist.hub.client.Payload;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.util.RandomUtils;
@@ -18,7 +18,6 @@ import java.util.Optional;
 @Component
 @AllArgsConstructor
 public class Aria2Client {
-    private final Http http;
     private final AppConfigService appConfigService;
 
     /**
@@ -46,7 +45,7 @@ public class Aria2Client {
                     .addBody("method", "aria2.addUri")
                     .addBody("params", params);
             // 发送POST请求
-            http.post(payload);
+            HttpUtil.post(payload);
         }
     }
 
@@ -66,7 +65,7 @@ public class Aria2Client {
                     .addBody("id", RandomUtils.generateRandomId())
                     .addBody("method", "aria2.purgeDownloadResult")
                     .addBody("params", params);
-            http.post(payload);
+            HttpUtil.post(payload);
         }
     }
 
@@ -90,7 +89,7 @@ public class Aria2Client {
                     .addBody("method", "aria2.tellActive") // 要调用的aria2方法
                     .addBody("params", params); // 请求参数
             // 发送HTTP POST请求并处理响应
-            return http.post(payload).asList(DownloadInfo.class, "result");
+            return HttpUtil.post(payload).asList(DownloadInfo.class, "result");
         }
         // 如果获取aria2配置失败，则返回空列表
         return new ArrayList<>();

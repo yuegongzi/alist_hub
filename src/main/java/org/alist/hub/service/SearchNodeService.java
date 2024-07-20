@@ -7,4 +7,5 @@ public interface SearchNodeService extends GenericService<SearchNode, Long> {
     void build();
 
     void update();
+
 }

@@ -9,7 +9,7 @@ import org.alist.hub.bean.FileItem;
 import org.alist.hub.bean.SpaceInfo;
 import org.alist.hub.bo.AliYunOpenBO;
 import org.alist.hub.bo.Persistent;
-import org.alist.hub.client.Http;
+import org.alist.hub.client.HttpUtil;
 import org.alist.hub.client.Payload;
 import org.alist.hub.client.Response;
 import org.alist.hub.exception.ServiceException;
@@ -31,13 +31,12 @@ import java.util.Optional;
 @Slf4j
 public class AliYunOpenClient {
     private final AppConfigService appConfigService;
-    private final Http http;
 
 
     // 刷新token
     private String refreshToken(String refreshToken) {
         // 发送HTTP请求获取新的token
-        Response response = http.post(Payload.create(Constants.API_DOMAIN + "/alist/ali_open/code")
+        Response response = HttpUtil.post(Payload.create(Constants.API_DOMAIN + "/alist/ali_open/code")
                 .addBody("grant_type", "refresh_token")
                 .addBody("refresh_token", refreshToken)
         );
@@ -89,7 +88,7 @@ public class AliYunOpenClient {
      * @return 用户驱动信息
      */
     public Optional<DriveInfo> getDriveInfo() {
-        return http.post(createPayload("/adrive/v1.0/user/getDriveInfo")).asValue(DriveInfo.class);
+        return HttpUtil.post(createPayload("/adrive/v1.0/user/getDriveInfo")).asValue(DriveInfo.class);
     }
 
 
@@ -99,7 +98,7 @@ public class AliYunOpenClient {
      * @return 空间信息
      */
     public Optional<SpaceInfo> getSpaceInfo() {
-        return http.post(createPayload("/adrive/v1.0/user/getSpaceInfo")).asValue(SpaceInfo.class, "personal_space_info");
+        return HttpUtil.post(createPayload("/adrive/v1.0/user/getSpaceInfo")).asValue(SpaceInfo.class, "personal_space_info");
     }
 
 
@@ -115,7 +114,7 @@ public class AliYunOpenClient {
         Optional<DriveInfo> driveInfo = getDriveInfo();
         if (driveInfo.isPresent()) {
             String driverId = Objects.equals(type, "backup") ? driveInfo.get().getBackupDriveId() : driveInfo.get().getResourceDriveId();
-            Response response = http.post(createPayload("/adrive/v1.0/openFile/create")
+            Response response = HttpUtil.post(createPayload("/adrive/v1.0/openFile/create")
                     .addBody("check_name_mode", "refuse")
                     .addBody("type", "folder")
                     .addBody("parent_file_id",
@@ -135,7 +134,7 @@ public class AliYunOpenClient {
      * @return 文件列表
      */
     public List<FileItem> getFileList(String driveId, String parentFileId) {
-        return http.post(createPayload("/adrive/v1.0/openFile/list")
+        return HttpUtil.post(createPayload("/adrive/v1.0/openFile/list")
                 .addBody("drive_id", driveId)
                 .addBody("parent_file_id", parentFileId)).asList(FileItem.class, "items");
     }
@@ -149,9 +148,9 @@ public class AliYunOpenClient {
      * @return 删除是否成功
      */
     public boolean deleteFile(String driveId, String fileId) {
-        return http.post(createPayload("/adrive/v1.0/openFile/delete")
+        return HttpUtil.post(createPayload("/adrive/v1.0/openFile/delete")
                 .addBody("drive_id", driveId)
-                .addBody("file_id", fileId)).responseEntity().getStatusCode().is2xxSuccessful();
+                .addBody("file_id", fileId)).getStatusCode().is2xxSuccessful();
     }
 
 }

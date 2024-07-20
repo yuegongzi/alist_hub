@@ -7,7 +7,7 @@ import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.ExpiringMap;
 import org.alist.hub.bean.FileSystem;
 import org.alist.hub.bean.FileSystemResp;
-import org.alist.hub.client.Http;
+import org.alist.hub.client.HttpUtil;
 import org.alist.hub.client.Payload;
 import org.alist.hub.client.Response;
 import org.alist.hub.exception.ServiceException;
@@ -26,7 +26,6 @@ import java.util.Optional;
 @Slf4j
 public class AListClient {
     private final static ExpiringMap<String, String> expiringMap = new ExpiringMap<>();
-    private final Http http;
     private final UserService userService;
 
     // 判断接口返回结果是否成功
@@ -53,7 +52,7 @@ public class AListClient {
      * @param id 存储的id
      */
     public void enable(Long id) {
-        isSuccess(http.post(create("/admin/storage/enable").addParam("id", id.toString())).asJsonNode());
+        isSuccess(HttpUtil.post(create("/admin/storage/enable").addParam("id", id.toString())).asJsonNode());
     }
 
 
@@ -63,7 +62,7 @@ public class AListClient {
      * @param id 存储的id
      */
     public void disable(Long id) {
-        isSuccess(http.post(create("/admin/storage/disable").addParam("id", id.toString())).asJsonNode());
+        isSuccess(HttpUtil.post(create("/admin/storage/disable").addParam("id", id.toString())).asJsonNode());
     }
 
 
@@ -90,7 +89,7 @@ public class AListClient {
         } catch (InterruptedException e) {
             log.error(e.getMessage(), e);
         }
-        isSuccess(http.post(payload).asJsonNode());
+        isSuccess(HttpUtil.post(payload).asJsonNode());
     }
 
     /**
@@ -105,7 +104,7 @@ public class AListClient {
         Payload payload = Payload.create(Constants.ALIST_BASE_URL + "/auth/login")
                 .addBody("username", username)
                 .addBody("password", password);
-        Response response = http.post(payload);
+        Response response = HttpUtil.post(payload);
         JsonNode jsonNode = isSuccess(response.asJsonNode());
         return jsonNode.findValue("token").asText();
     }
@@ -129,7 +128,7 @@ public class AListClient {
     }
 
     public String get(String path) {
-        JsonNode jsonNode = http.post(create("/fs/get")
+        JsonNode jsonNode = HttpUtil.post(create("/fs/get")
                         .addBody("path", path)
                         .addBody("refresh", true))
                 .asJsonNode();
@@ -137,7 +136,7 @@ public class AListClient {
     }
 
     public void fsExecute(String path, List<FileSystem> list, int page) {
-        JsonNode jsonNode = http.post(create("/fs/list")
+        JsonNode jsonNode = HttpUtil.post(create("/fs/list")
                         .addBody("path", path)
                         .addBody("page", page)
                         .addBody("password", "")

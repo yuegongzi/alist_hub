@@ -40,7 +40,6 @@ public class SearchNodeServiceImpl extends GenericServiceImpl<SearchNode, Long> 
     private MovieService movieService;
     @Resource
     private StorageService storageService;
-
     public SearchNodeServiceImpl(SearchNodeRepository repository) {
         super(repository);
         this.repository = repository;
@@ -156,10 +155,7 @@ public class SearchNodeServiceImpl extends GenericServiceImpl<SearchNode, Long> 
         searchNode.setSize(0L);
         searchNode.setParent(pathInfo.path());
         searchNode.setName(pathInfo.name());
-        List<SearchNode> searchNodes = repository.findByNameAndParent(searchNode.getName(), searchNode.getParent());
-        if (searchNodes.isEmpty()) {//相同parent、name的节点过滤掉
-            searchNodeList.add(searchNode);
-        }
+        searchNodeList.add(searchNode);
     }
 
     private void handleLine(String content) {

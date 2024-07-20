@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileInfo;
 import org.alist.hub.bo.AliYunOpenBO;
-import org.alist.hub.client.Http;
+import org.alist.hub.client.HttpUtil;
 import org.alist.hub.client.Payload;
 import org.alist.hub.client.Response;
 import org.alist.hub.exception.ServiceException;
@@ -20,13 +20,12 @@ import java.util.Optional;
 @AllArgsConstructor
 @Service
 public class AliYunOpenServiceImpl implements AliYunOpenService {
-    private final Http http;
     private final AppConfigService appConfigService;
     private final AliYunOpenClient aliYunOpenClient;
 
     @Override
     public void authorize(String url) {
-        Response response = http.get(Payload.create(Constants.API_DOMAIN + "/proxy/" + url));
+        Response response = HttpUtil.get(Payload.create(Constants.API_DOMAIN + "/proxy/" + url));
         JsonNode jsonNode = response.asJsonNode();
         // 获取authCode字段的值，若不存在则为空字符串
         String authCode = jsonNode.findValue("authCode").asText("");
@@ -37,7 +36,7 @@ public class AliYunOpenServiceImpl implements AliYunOpenService {
             payload.addBody("code", authCode);
             payload.addBody("grant_type", "authorization_code");
             // 发送POST请求获取新的refresh_token
-            Response res = http.post(payload);
+            Response res = HttpUtil.post(payload);
             Optional<AliYunOpenBO> optional = res.asValue(AliYunOpenBO.class);
             if (optional.isEmpty()) {
                 throw new ServiceException("授权回调失败");

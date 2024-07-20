@@ -2,7 +2,7 @@ package org.alist.hub.client;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.http.HttpHeaders;
+import org.alist.hub.util.JsonUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -10,13 +10,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Setter
 @Getter
 public class Payload {
     private String url;
     private Map<String, Object> body;
-    private HttpHeaders headers;
+    private Map<String, String> headers;
     private MultiValueMap<String, String> urlParams;
     private MultiValueMap<String, String> form;
 
@@ -28,13 +29,13 @@ public class Payload {
         Payload payload = new Payload(url);
         payload.setBody(new HashMap<>());
         payload.setUrlParams(new LinkedMultiValueMap<>());
-        payload.setHeaders(new HttpHeaders());
+        payload.setHeaders(new HashMap<>());
         payload.setForm(new LinkedMultiValueMap<>());
         return payload;
     }
 
     public Payload addHeader(String key, String value) {
-        headers.add(key, value);
+        headers.put(key, value);
         return this;
     }
 
@@ -60,11 +61,15 @@ public class Payload {
                 .toUri();
     }
 
-    public Object getBodyValue() {
+    public String getBodyString() {
         if (this.form.isEmpty()) {
-            return this.body;
+            this.addHeader("Content-Type", "application/json");
+            return JsonUtils.toJson(this.body);
         }
-        return this.form;
+        this.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        return this.form.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining("&"));
     }
 
 }

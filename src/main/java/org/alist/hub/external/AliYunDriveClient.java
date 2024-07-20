@@ -8,7 +8,7 @@ import org.alist.hub.bean.ExpiringMap;
 import org.alist.hub.bean.ShareFile;
 import org.alist.hub.bo.AliYunDriveBO;
 import org.alist.hub.bo.Persistent;
-import org.alist.hub.client.Http;
+import org.alist.hub.client.HttpUtil;
 import org.alist.hub.client.Payload;
 import org.alist.hub.client.Response;
 import org.alist.hub.exception.ServiceException;
@@ -27,12 +27,11 @@ import java.util.Optional;
 @Slf4j
 public class AliYunDriveClient {
     private final static ExpiringMap<String, String> expiringMap = new ExpiringMap<>();
-    private final Http http;
     private final AppConfigService appConfigService;
 
     private String refreshToken(AliYunDriveBO aliYunDriveBO) {
         // 发送HTTP请求获取新的token
-        Response response = http.post(Payload.create("https://auth.aliyundrive.com/v2/account/token")
+        Response response = HttpUtil.post(Payload.create("https://auth.aliyundrive.com/v2/account/token")
                 .addBody("grant_type", "refresh_token")
                 .addBody("refresh_token", aliYunDriveBO.getRefreshToken())
         );
@@ -69,7 +68,7 @@ public class AliYunDriveClient {
         Payload payload = Payload.create("https://member.aliyundrive.com/v1/activity/sign_in_list")
                 .addHeader("Authorization", "Bearer " + getAccessToken())
                 .addHeader("user-agent", Constants.USER_AGENT);
-        return http.post(payload).asJsonNode().findValue("result");
+        return HttpUtil.post(payload).asJsonNode().findValue("result");
     }
 
     /**
@@ -88,8 +87,8 @@ public class AliYunDriveClient {
         payload.addHeader("user-agent", Constants.USER_AGENT);
         payload.addBody("share_id", shareId);
         payload.addBody("share_pwd", sharePwd);
-        Response response = http.post(payload);
-        if (response.responseEntity().getStatusCode().is2xxSuccessful()) {
+        Response response = HttpUtil.post(payload);
+        if (response.getStatusCode().is2xxSuccessful()) {
             shareToken = response.asJsonNode().findValue("share_token").asText();
             expiringMap.put(shareId, shareToken, 7000 * 1000);
             return Optional.of(shareToken);
@@ -117,8 +116,8 @@ public class AliYunDriveClient {
                 .addBody("parent_file_id", parentFileId)
                 .addBody("share_id", shareId)
                 .addBody("limit", 100);
-        Response response = http.post(payload);
-        if (response.responseEntity().getStatusCode().is2xxSuccessful()) {
+        Response response = HttpUtil.post(payload);
+        if (response.getStatusCode().is2xxSuccessful()) {
             return response.asList(ShareFile.class, "items");
         }
         return new ArrayList<>();

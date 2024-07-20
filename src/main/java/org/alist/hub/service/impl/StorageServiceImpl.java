@@ -209,6 +209,7 @@ public class StorageServiceImpl extends GenericServiceImpl<Storage, Long> implem
                 Map<String, Object> addition = new HashMap<>(storage.getAddition());
                 addition.putAll(config);
                 storage.setAddition(addition);
+                break;
 
         }
         aListClient.addOrUpdate(storage);
