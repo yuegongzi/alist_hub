@@ -212,7 +212,15 @@ public class StorageServiceImpl extends GenericServiceImpl<Storage, Long> implem
                 break;
 
         }
-        aListClient.addOrUpdate(storage);
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            aListClient.addOrUpdate(storage);
+        }).start();
+
     }
 
     @Override
