@@ -41,8 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @RestController
 @RequestMapping("/setting")
@@ -57,7 +55,6 @@ public class SettingController {
     private final AListClient aListClient;
     private final HubProperties hubProperties;
     private final AListService aListService;
-
     @GetMapping("/security")
     public List<SecurityDTO> getSecurity() {
         List<SecurityDTO> securityDTOList = new ArrayList<>();
@@ -126,18 +123,10 @@ public class SettingController {
     }
 
     private void updateStorage(String driver) {
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
-        // 提交一个任务
-        executorService.submit(() -> {
-            try {
-                Thread.sleep(2000);
-                List<Storage> storages = storageService.findAllByDriver(driver);
-                storages.forEach(storageService::flush);
-            } catch (InterruptedException e) {
-                log.error(e.getMessage(), e);
-            }
-
-        });
+        new Thread(() -> {
+            List<Storage> storages = storageService.findAllByDriver(driver);
+            storages.forEach(storageService::flush);
+        }).start();
     }
 
     @GetMapping("/ali")
