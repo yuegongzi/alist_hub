@@ -1,7 +1,6 @@
 package org.alist.hub.service.impl;
 
 import jakarta.annotation.Resource;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
@@ -41,9 +40,6 @@ public class SearchNodeServiceImpl extends GenericServiceImpl<SearchNode, Long> 
     private MovieService movieService;
     @Resource
     private StorageService storageService;
-
-    @Resource
-    private EntityManager entityManager;
 
     public SearchNodeServiceImpl(SearchNodeRepository repository) {
         super(repository);
