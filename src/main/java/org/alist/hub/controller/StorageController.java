@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/storage")
 @AllArgsConstructor
@@ -31,10 +29,6 @@ public class StorageController {
 
     @PostMapping
     public void add(@RequestBody @Valid Storage storage) {
-        Storage s = new Storage();
-        s.setMountPath(storage.getMountPath());
-        Optional<Storage> temp = storageService.findOne(Example.of(s));
-        temp.ifPresent(value -> storage.setId(value.getId()));
         storage.build();
         storageService.flush(storage);
     }
