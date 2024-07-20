@@ -84,11 +84,6 @@ public class AListClient {
         payload.addBody("order_by", storage.getOrderBy());
         payload.addBody("order_direction", storage.getOrderDirection());
         payload.addBody("addition", JsonUtils.toJson(storage.getAddition()));
-        try {
-            Thread.sleep(1000);//暂停两秒, 避免请求过于频繁
-        } catch (InterruptedException e) {
-            log.error(e.getMessage(), e);
-        }
         isSuccess(HttpUtil.post(payload).asJsonNode());
     }
 
