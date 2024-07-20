@@ -110,6 +110,7 @@ public class AListServiceImpl implements AListService {
 
     private void download(String file, String unzipPath) {
         try {
+            log.info("开始下载文件...." + file);
             // 指定下载文件路径
             String path = Constants.DATA_DIR + "/" + file;
             // 下载文件
@@ -150,10 +151,11 @@ public class AListServiceImpl implements AListService {
      */
     @Override
     public boolean checkUpdate() {
+        log.info("检查是否有新版本更新");
         // 获取最新版本号
         String version = HttpUtil.get(Payload.create(Constants.XIAOYA_BASE_URL + "version.txt")).body();
         version = version.replaceAll("[\n\r]+", "");
-
+        log.info("获取最新版本号: " + version);
         // 查询已安装版本号
         Optional<XiaoYaBo> xiaoYaBoOptional = appConfigService.get(new XiaoYaBo(), XiaoYaBo.class);
 

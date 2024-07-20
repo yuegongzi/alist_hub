@@ -1,6 +1,7 @@
 package org.alist.hub.service.impl;
 
 import jakarta.annotation.Resource;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
@@ -40,6 +41,10 @@ public class SearchNodeServiceImpl extends GenericServiceImpl<SearchNode, Long> 
     private MovieService movieService;
     @Resource
     private StorageService storageService;
+
+    @Resource
+    private EntityManager entityManager;
+
     public SearchNodeServiceImpl(SearchNodeRepository repository) {
         super(repository);
         this.repository = repository;
@@ -100,31 +105,41 @@ public class SearchNodeServiceImpl extends GenericServiceImpl<SearchNode, Long> 
             try (BufferedReader reader = Files.newBufferedReader(file)) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    if (searchNodeList.size() >= 500) {
-                        repository.saveAllAndFlush(searchNodeList);
-                        searchNodeList.clear();
+                    if (searchNodeList.size() >= 50) {
+                        saveNodes();
                     }
-                    if (movieList.size() >= 500) {
-                        movieService.saveAllAndFlush(movieList);
-                        movieList.clear();
+                    if (movieList.size() >= 50) {
+                        saveMovies();
                     }
                     if (line.contains("/")) {
                         handleLine(line);
                     }
                 }
                 if (!searchNodeList.isEmpty()) {
-                    repository.saveAllAndFlush(searchNodeList);
-                    searchNodeList.clear();
+                    saveNodes();
                 }
                 if (!movieList.isEmpty()) {
-                    movieService.saveAllAndFlush(movieList);
-                    movieList.clear();
+                    saveMovies();
                 }
             } catch (IOException e) {
                 log.error("Error occurred while reading the file: " + e.getMessage());
             }
         });
         log.info("耗时：{}ms", System.currentTimeMillis() - now);
+    }
+
+    private void saveMovies() {
+        movieService.saveAll(movieList);
+        movieService.flush();
+        entityManager.clear();
+        movieList.clear();
+    }
+
+    private void saveNodes() {
+        repository.saveAll(searchNodeList);
+        repository.flush();
+        entityManager.clear();
+        searchNodeList.clear();
     }
 
     /**

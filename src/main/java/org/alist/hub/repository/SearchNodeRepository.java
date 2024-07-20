@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface SearchNodeRepository extends AListHubRepository<SearchNode, Long> {
 
     @Modifying
-    @Query("DELETE SearchNode s  WHERE s.type < :type")
+    @Query("DELETE SearchNode s  WHERE s.type = :type")
     void deleteByType(Integer type);
 
 }
