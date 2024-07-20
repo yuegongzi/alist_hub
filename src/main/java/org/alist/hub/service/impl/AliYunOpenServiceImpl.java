@@ -28,7 +28,7 @@ public class AliYunOpenServiceImpl implements AliYunOpenService {
         Response response = HttpUtil.get(Payload.create(Constants.API_DOMAIN + "/proxy/" + url));
         JsonNode jsonNode = response.asJsonNode();
         // 获取authCode字段的值，若不存在则为空字符串
-        String authCode = jsonNode.findValue("authCode").asText("");
+        String authCode = jsonNode.findValue("authCode") != null ? jsonNode.findValue("authCode").asText() : "";
         // 如果authCode非空，则进行进一步处理
         if (StringUtils.hasText(authCode)) {
             // 创建请求Payload，并添加授权代码和其他参数
@@ -42,6 +42,10 @@ public class AliYunOpenServiceImpl implements AliYunOpenService {
                 throw new ServiceException("授权回调失败");
             }
             AliYunOpenBO aliYunOpenBO = optional.get();
+            if (!StringUtils.hasText(aliYunOpenBO.getRefreshToken())) {
+                throw new ServiceException("授权回调失败");
+            }
+            appConfigService.saveOrUpdate(aliYunOpenBO);
             // 更新ExpiresIn字段的值
             aliYunOpenBO.setExpiresIn(aliYunOpenBO.getExpiresIn() * 900 + System.currentTimeMillis());//少存一点时间
             // 在根目录创建文件夹
@@ -59,4 +63,5 @@ public class AliYunOpenServiceImpl implements AliYunOpenService {
 
         }
     }
+
 }

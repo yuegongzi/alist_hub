@@ -76,9 +76,12 @@ public class AListServiceImpl implements AListService {
     @Override
     public boolean startAList() {
         try {
-            String config = Files.readString(Path.of(hubProperties.getPath() + "/config.json"));
-            JsonNode jsonNode = JsonUtils.readTree(config);
-            updateTvBox(jsonNode.findPath("site_url").asText());
+            Path path = Path.of(hubProperties.getPath() + "/config.json");
+            if (Files.exists(path)) {
+                String config = Files.readString(path);
+                JsonNode jsonNode = JsonUtils.readTree(config);
+                updateTvBox(jsonNode.findPath("site_url").asText());
+            }
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }

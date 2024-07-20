@@ -170,6 +170,7 @@ public class SettingController {
         }
         if (StringUtils.hasText(configVO.getSiteUrl())) {
             objectNode.put("site_url", configVO.getSiteUrl());
+            objectNode.put("token_expires_in", 4800);
         }
         Files.writeString(Path.of(hubProperties.getPath() + "/config.json"), JsonUtils.toJson(objectNode));
         aListService.updateTvBox(configVO.getSiteUrl());

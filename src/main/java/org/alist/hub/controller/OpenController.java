@@ -81,7 +81,7 @@ public class OpenController {
     public String getOpenapiQR() {
         Response response = HttpUtil.post(Payload.create(Constants.API_DOMAIN + "/alist/ali_open/qr"));
         JsonNode jsonNode = response.asJsonNode();
-        String qr = jsonNode.findValue("qrCodeUrl").asText("");
+        String qr = jsonNode.findValue("qrCodeUrl") != null ? jsonNode.findValue("qrCodeUrl").asText() : null;
         if (StringUtils.hasText(qr)) {
             return qr;
         }

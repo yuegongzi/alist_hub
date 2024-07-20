@@ -86,7 +86,7 @@ public class Storage {
         this.setWebProxy(false);
         this.setDownProxyUrl("");
         this.setModified(formattedDate);
-        if (this.getDriver().equals("QuarkShare")) {
+        if ("QuarkShare".equals(this.getDriver())) {
             this.setWebdavPolicy("native_proxy");
         } else {
             this.setWebdavPolicy("302_redirect");
