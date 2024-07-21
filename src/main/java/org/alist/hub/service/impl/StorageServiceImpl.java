@@ -229,21 +229,6 @@ public class StorageServiceImpl extends GenericServiceImpl<Storage, Long> implem
     }
 
     @Override
-    public void deleteByIdLessThanAndDisabled(Long id, boolean disabled) {
-        this.repository.deleteByIdLessThanAndDisabled(id, disabled);
-    }
-
-    @Override
-    public void deleteByIdLessThan(Long id) {
-        this.repository.deleteByIdLessThan(id);
-    }
-
-    @Override
-    public void updateDriver(String oldDriver, String driver) {
-        this.repository.updateDriver(oldDriver, driver);
-    }
-
-    @Override
     public List<Storage> findAllByIdGreaterThan(Long id) {
         return this.repository.findAllByIdGreaterThan(id);
     }

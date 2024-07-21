@@ -51,6 +51,7 @@ public class SearchNodeServiceImpl extends GenericServiceImpl<SearchNode, Long> 
     public void build() {
         List<Storage> list = storageService.findAllByIdGreaterThan(Constants.MY_ALI_ID - 1L);
         repository.deleteByType(2);
+        repository.removeDuplicate();
         new Thread(() -> {
             list.forEach(storage -> {
                 execute(storage.getMountPath());
@@ -65,6 +66,9 @@ public class SearchNodeServiceImpl extends GenericServiceImpl<SearchNode, Long> 
             List<FileSystem> list = aListClient.fs(path);
             List<SearchNode> searchNodes = new ArrayList<>();
             for (FileSystem fileSystem : list) {
+                if (!fileSystem.isDir()) {//不是目录, 不增加索引节点
+                    continue;
+                }
                 SearchNode searchNode = new SearchNode();
                 searchNode.setName(fileSystem.getName());
                 searchNode.setParent(path);

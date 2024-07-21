@@ -19,12 +19,5 @@ public interface StorageService extends GenericService<Storage, Long> {
 
     List<Storage> findAllByDriver(String driver);
 
-    void deleteByIdLessThanAndDisabled(Long id, boolean disabled);
-
-    void deleteByIdLessThan(Long id);
-
-    // 更新driver
-    void updateDriver(String oldDriver, String driver);
-
     List<Storage> findAllByIdGreaterThan(Long id);
 }
