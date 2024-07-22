@@ -11,11 +11,15 @@ import org.alist.hub.external.AListClient;
 import org.alist.hub.external.AliYunDriveClient;
 import org.alist.hub.external.AliYunOpenClient;
 import org.alist.hub.external.PushDeerClient;
+import org.alist.hub.external.QuarkClient;
+import org.alist.hub.external.UCClient;
 import org.alist.hub.model.AppConfig;
+import org.alist.hub.model.Storage;
 import org.alist.hub.service.AListService;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.FileWatcherService;
 import org.alist.hub.service.SearchNodeService;
+import org.alist.hub.service.StorageService;
 import org.alist.hub.util.DateTimeUtils;
 import org.alist.hub.util.ReplaceUtils;
 import org.springframework.data.domain.Example;
@@ -39,6 +43,9 @@ public class AListHubScheduler {
     private final SearchNodeService searchNodeService;
     private final FileWatcherService fileWatcherService;
     private final AListClient aListClient;
+    private final UCClient ucClient;
+    private final QuarkClient quarkClient;
+    private final StorageService storageService;
 
     @Scheduled(cron = "0 17 9 * * ?")
     public void sign() {
@@ -55,7 +62,15 @@ public class AListHubScheduler {
                 }
             });
         }
-
+        double signDailyReward = quarkClient.sign();
+        if (signDailyReward > 0d) {
+            pushDeerClient.ifPresent(notice -> {
+                if (notice.isSign()) {
+                    double signDailyRewardMb = signDailyReward / (1024 * 1024);
+                    pushDeerClient.send(notice.getPushKey(), "夸克签到成功", String.format("本次签到获取 %s MB", signDailyRewardMb));
+                }
+            });
+        }
     }
 
     @Scheduled(cron = "0 17 01 * * ?")
@@ -113,5 +128,15 @@ public class AListHubScheduler {
     @Scheduled(initialDelay = 10 * 60 * 1000, fixedRate = 60 * 60 * 1000)
     public void replace() {
         ReplaceUtils.replaceString(Path.of("/www/tvbox/libs/alist.min.js"), "ALIST_AUTH", aListClient.getToken());
+    }
+
+    @Scheduled(initialDelay = 30 * 60 * 1000, fixedRate = 180 * 60 * 1000)
+    public void refreshCookie() {
+        if (ucClient.refreshCookie()) {
+            List<Storage> storages = storageService.findAllByDriver("UCShare");
+            storages.forEach(storageService::flush);
+        }
+        ucClient.refreshCookie();
+
     }
 }

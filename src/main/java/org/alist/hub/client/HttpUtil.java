@@ -32,11 +32,11 @@ public class HttpUtil {
     private static Response sendRequest(HttpRequest request) {
         try {
             HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return Response.of(httpResponse.statusCode(), httpResponse.body());
+            return Response.of(httpResponse);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            // 返回一个包含500状态码和空主体的响应对象，表示内部服务器错误
-            return Response.of(500, "{}");
+            // 表示内部服务器错误
+            throw new RuntimeException("Internal Server Error");
         }
     }
 

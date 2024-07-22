@@ -156,7 +156,7 @@ public class AListServiceImpl implements AListService {
     public boolean checkUpdate() {
         log.info("检查是否有新版本更新");
         // 获取最新版本号
-        String version = HttpUtil.get(Payload.create(Constants.XIAOYA_BASE_URL + "version.txt")).body();
+        String version = HttpUtil.get(Payload.create(Constants.XIAOYA_BASE_URL + "version.txt")).httpResponse().body();
         version = version.replaceAll("[\n\r]+", "");
         log.info("获取最新版本号: " + version);
         // 查询已安装版本号
