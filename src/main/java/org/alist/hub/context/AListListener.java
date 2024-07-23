@@ -21,8 +21,6 @@ public class AListListener implements ApplicationListener<ApplicationReadyEvent>
         String env = event.getApplicationContext().getEnvironment().getActiveProfiles()[0];
         if ("prod".equals(env)) {
             initialService.execute();
-        } else {
-            System.setProperty("jdk.httpclient.HttpClient.log", "all");
         }
 
     }
