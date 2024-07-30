@@ -13,7 +13,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 
 @Slf4j
-public class HttpUtil {
+public class Http {
 
     private static final HttpClient httpClient = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)

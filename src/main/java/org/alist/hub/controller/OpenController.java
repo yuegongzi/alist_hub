@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
-import org.alist.hub.client.HttpUtil;
+import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
 import org.alist.hub.client.Response;
 import org.alist.hub.dto.InitializeDTO;
@@ -49,7 +49,7 @@ public class OpenController {
      */
     @GetMapping("/aliyun/drive/qr")
     public JsonNode getDriveQR() {
-        Response response = HttpUtil.get(Payload.create(Constants.API_DOMAIN + "/alist/ali/qr"));
+        Response response = Http.get(Payload.create(Constants.API_DOMAIN + "/alist/ali/qr"));
         JsonNode jsonNode = response.asJsonNode();
         if (jsonNode.findValue("hasError").asBoolean()) {
             throw new ServiceException("获取授权二维码失败");
@@ -79,7 +79,7 @@ public class OpenController {
      */
     @GetMapping("/aliyun/openapi/qr")
     public String getOpenapiQR() {
-        Response response = HttpUtil.post(Payload.create(Constants.API_DOMAIN + "/alist/ali_open/qr"));
+        Response response = Http.post(Payload.create(Constants.API_DOMAIN + "/alist/ali_open/qr"));
         JsonNode jsonNode = response.asJsonNode();
         String qr = jsonNode.findValue("qrCodeUrl") != null ? jsonNode.findValue("qrCodeUrl").asText() : null;
         if (StringUtils.hasText(qr)) {

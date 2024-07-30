@@ -7,7 +7,7 @@ import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.ExpiringMap;
 import org.alist.hub.bean.FileSystem;
 import org.alist.hub.bean.FileSystemResp;
-import org.alist.hub.client.HttpUtil;
+import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
 import org.alist.hub.client.Response;
 import org.alist.hub.exception.ServiceException;
@@ -52,7 +52,7 @@ public class AListClient {
      * @param id 存储的id
      */
     public void enable(Long id) {
-        isSuccess(HttpUtil.post(create("/admin/storage/enable").addParam("id", id.toString())).asJsonNode());
+        isSuccess(Http.post(create("/admin/storage/enable").addParam("id", id.toString())).asJsonNode());
     }
 
 
@@ -62,7 +62,7 @@ public class AListClient {
      * @param id 存储的id
      */
     public void disable(Long id) {
-        isSuccess(HttpUtil.post(create("/admin/storage/disable").addParam("id", id.toString())).asJsonNode());
+        isSuccess(Http.post(create("/admin/storage/disable").addParam("id", id.toString())).asJsonNode());
     }
 
 
@@ -84,7 +84,7 @@ public class AListClient {
         payload.addBody("order_by", storage.getOrderBy());
         payload.addBody("order_direction", storage.getOrderDirection());
         payload.addBody("addition", JsonUtils.toJson(storage.getAddition()));
-        isSuccess(HttpUtil.post(payload).asJsonNode());
+        isSuccess(Http.post(payload).asJsonNode());
     }
 
     /**
@@ -99,7 +99,7 @@ public class AListClient {
         Payload payload = Payload.create(Constants.ALIST_BASE_URL + "/auth/login")
                 .addBody("username", username)
                 .addBody("password", password);
-        Response response = HttpUtil.post(payload);
+        Response response = Http.post(payload);
         JsonNode jsonNode = isSuccess(response.asJsonNode());
         return jsonNode.findValue("token").asText();
     }
@@ -123,7 +123,7 @@ public class AListClient {
     }
 
     public String get(String path) {
-        JsonNode jsonNode = HttpUtil.post(create("/fs/get")
+        JsonNode jsonNode = Http.post(create("/fs/get")
                         .addBody("path", path)
                         .addBody("refresh", true))
                 .asJsonNode();
@@ -131,7 +131,7 @@ public class AListClient {
     }
 
     public void fsExecute(String path, List<FileSystem> list, int page) {
-        JsonNode jsonNode = HttpUtil.post(create("/fs/list")
+        JsonNode jsonNode = Http.post(create("/fs/list")
                         .addBody("path", path)
                         .addBody("page", page)
                         .addBody("password", "")

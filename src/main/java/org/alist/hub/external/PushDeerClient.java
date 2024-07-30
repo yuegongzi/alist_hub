@@ -3,7 +3,7 @@ package org.alist.hub.external;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bo.NoticeBO;
-import org.alist.hub.client.HttpUtil;
+import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
 import org.alist.hub.service.AppConfigService;
 import org.springframework.stereotype.Component;
@@ -28,7 +28,7 @@ public class PushDeerClient {
         payload.addParam("text", title);
         payload.addParam("desp", message);
         payload.addParam("type", "markdown");
-        new Thread(() -> HttpUtil.post(payload)).start();//不因执行失败 影响主进程运行
+        new Thread(() -> Http.post(payload)).start();//不因执行失败 影响主进程运行
     }
 
 

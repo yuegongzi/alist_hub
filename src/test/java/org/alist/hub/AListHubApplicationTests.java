@@ -1,6 +1,6 @@
 package org.alist.hub;
 
-import org.alist.hub.scheduler.AListHubScheduler;
+import org.alist.hub.external.QuarkClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -8,10 +8,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class AListHubApplicationTests {
     @Autowired
-    private AListHubScheduler aListHubScheduler;
+    private QuarkClient quarkClient;
     @Test
     void contextLoads() {
-        aListHubScheduler.sign();
+        System.out.println(quarkClient.signInfo());
+        ;
 
     }
 

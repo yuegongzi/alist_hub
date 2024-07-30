@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bean.FileInfo;
 import org.alist.hub.bo.AliYunOpenBO;
-import org.alist.hub.client.HttpUtil;
+import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
 import org.alist.hub.client.Response;
 import org.alist.hub.exception.ServiceException;
@@ -25,7 +25,7 @@ public class AliYunOpenServiceImpl implements AliYunOpenService {
 
     @Override
     public void authorize(String url) {
-        Response response = HttpUtil.get(Payload.create(Constants.API_DOMAIN + "/proxy/" + url));
+        Response response = Http.get(Payload.create(Constants.API_DOMAIN + "/proxy/" + url));
         JsonNode jsonNode = response.asJsonNode();
         // 获取authCode字段的值，若不存在则为空字符串
         String authCode = jsonNode.findValue("authCode") != null ? jsonNode.findValue("authCode").asText() : "";
@@ -36,7 +36,7 @@ public class AliYunOpenServiceImpl implements AliYunOpenService {
             payload.addBody("code", authCode);
             payload.addBody("grant_type", "authorization_code");
             // 发送POST请求获取新的refresh_token
-            Response res = HttpUtil.post(payload);
+            Response res = Http.post(payload);
             Optional<AliYunOpenBO> optional = res.asValue(AliYunOpenBO.class);
             if (optional.isEmpty()) {
                 throw new ServiceException("授权回调失败");

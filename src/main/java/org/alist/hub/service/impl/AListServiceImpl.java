@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.XiaoYaBo;
-import org.alist.hub.client.HttpUtil;
+import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
 import org.alist.hub.configure.HubProperties;
 import org.alist.hub.exception.ServiceException;
@@ -117,7 +117,7 @@ public class AListServiceImpl implements AListService {
             // 指定下载文件路径
             String path = Constants.DATA_DIR + "/" + file;
             // 下载文件
-            HttpUtil.downloadFile(Payload.create(Constants.XIAOYA_BASE_URL + file), path);
+            Http.downloadFile(Payload.create(Constants.XIAOYA_BASE_URL + file), path);
             // 解压缩文件
             ZipUtils.unzip(path, unzipPath);
         } catch (Exception e) {
@@ -156,7 +156,7 @@ public class AListServiceImpl implements AListService {
     public boolean checkUpdate() {
         log.info("检查是否有新版本更新");
         // 获取最新版本号
-        String version = HttpUtil.get(Payload.create(Constants.XIAOYA_BASE_URL + "version.txt")).httpResponse().body();
+        String version = Http.get(Payload.create(Constants.XIAOYA_BASE_URL + "version.txt")).httpResponse().body();
         version = version.replaceAll("[\n\r]+", "");
         log.info("获取最新版本号: " + version);
         // 查询已安装版本号

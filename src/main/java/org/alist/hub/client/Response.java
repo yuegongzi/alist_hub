@@ -14,6 +14,7 @@ import java.util.Optional;
 public record Response(HttpResponse<String> httpResponse) {
 
     public static Response of(HttpResponse<String> httpResponse) {
+        System.out.println(httpResponse.body());
         return new Response(httpResponse);
     }
 

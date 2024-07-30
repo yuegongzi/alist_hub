@@ -3,7 +3,7 @@ package org.alist.hub.external;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.bean.Constants;
-import org.alist.hub.client.HttpUtil;
+import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
 import org.alist.hub.client.Response;
 import org.alist.hub.model.AppConfig;
@@ -33,7 +33,7 @@ public class UCClient {
                 .addHeader("Cookie", cookie)
                 .addHeader("User-Agent", userAgent)
                 .addHeader("Referer", referer);
-        Response response = HttpUtil.get(payload);
+        Response response = Http.get(payload);
         if (response.getStatusCode().is4xxClientError()) {//401错误
             return false;
         }

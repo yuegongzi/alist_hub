@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.alist.hub.annotation.IgnoreResponseHandler;
 import org.alist.hub.bean.Constants;
-import org.alist.hub.client.HttpUtil;
+import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
 import org.alist.hub.model.Movie;
 import org.alist.hub.service.MovieService;
@@ -30,7 +30,7 @@ public class ImageController {
             Optional<Movie> optionalMovie = movieService.findById(id);
             if (optionalMovie.isPresent()) {
                 Payload payload = Payload.create(optionalMovie.get().getImageUrl()).addHeader("User-Agent", Constants.USER_AGENT);
-                byte[] imageBytes = HttpUtil.download(payload);
+                byte[] imageBytes = Http.download(payload);
                 if (imageBytes != null) {
                     response.setContentType("image/webp");
                     response.getOutputStream().write(imageBytes);

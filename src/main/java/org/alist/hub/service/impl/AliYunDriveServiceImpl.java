@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import org.alist.hub.bean.Constants;
 import org.alist.hub.bo.AliYunDriveBO;
-import org.alist.hub.client.HttpUtil;
+import org.alist.hub.client.Http;
 import org.alist.hub.client.Payload;
 import org.alist.hub.client.Response;
 import org.alist.hub.exception.ServiceException;
@@ -31,7 +31,7 @@ public class AliYunDriveServiceImpl implements AliYunDriveService {
         payload.addHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
         // 发送HTTP POST请求
-        Response response = HttpUtil.post(payload);
+        Response response = Http.post(payload);
 
         // 将响应转换为JsonNode对象
         JsonNode jsonNode = response.asJsonNode();

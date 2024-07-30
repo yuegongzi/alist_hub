@@ -62,15 +62,12 @@ public class AListHubScheduler {
                 }
             });
         }
-        double signDailyReward = quarkClient.sign();
-        if (signDailyReward > 0d) {
-            pushDeerClient.ifPresent(notice -> {
-                if (notice.isSign()) {
-                    double signDailyRewardMb = signDailyReward / (1024 * 1024);
-                    pushDeerClient.send(notice.getPushKey(), "夸克签到成功", String.format("本次签到获取 %s MB", signDailyRewardMb));
-                }
-            });
-        }
+        String message = quarkClient.signInfo();
+        pushDeerClient.ifPresent(notice -> {
+            if (notice.isSign()) {
+                pushDeerClient.send(notice.getPushKey(), "夸克签到: ", message);
+            }
+        });
     }
 
     @Scheduled(cron = "0 17 01 * * ?")
