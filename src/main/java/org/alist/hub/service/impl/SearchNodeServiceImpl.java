@@ -61,7 +61,7 @@ public class SearchNodeServiceImpl extends GenericServiceImpl<SearchNode, Long> 
     }
 
     private void execute(String path) {
-        log.info("构建路径:{}", path);
+//        log.info("构建路径:{}", path);
         try {
             List<FileSystem> list = aListClient.fs(path);
             List<SearchNode> searchNodes = new ArrayList<>();

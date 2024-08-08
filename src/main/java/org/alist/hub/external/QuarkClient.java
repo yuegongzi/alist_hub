@@ -66,6 +66,7 @@ public class QuarkClient {
             params.put("sign", queryParams.get("sign"));
             params.put("vcode", queryParams.get("vcode"));
         }
+        System.out.println(JsonUtils.toJson(params));
         return params;
     }
 

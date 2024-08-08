@@ -12,7 +12,6 @@ class AListHubApplicationTests {
     @Test
     void contextLoads() {
         System.out.println(quarkClient.signInfo());
-        ;
 
     }
 
