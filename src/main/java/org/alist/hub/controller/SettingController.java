@@ -106,7 +106,7 @@ public class SettingController {
                 if (!"CONFIRMED".equals(status)) {
                     throw new ServiceException("校验失败");
                 }
-                updateStorage("AliyundriveShare2Open");
+//                updateStorage("AliyundriveShare2Open");
                 break;
             case "openapi":
                 if (account.getParams().containsKey("url")) {
