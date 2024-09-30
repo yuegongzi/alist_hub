@@ -125,7 +125,14 @@ public class SettingController {
     private void updateStorage(String driver) {
         new Thread(() -> {
             List<Storage> storages = storageService.findAllByDriver(driver);
-            storages.forEach(storageService::flush);
+            storages.forEach(storage -> {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                storageService.flush(storage);
+            });
         }).start();
     }
 
