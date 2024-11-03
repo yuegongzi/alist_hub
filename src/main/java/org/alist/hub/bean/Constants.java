@@ -2,7 +2,7 @@ package org.alist.hub.bean;
 
 public interface Constants {
     String ALIST_BASE_URL = "http://localhost:5244/api";
-    String XIAOYA_BASE_URL = "https://gitlab.com/xiaoyaliu/data/-/raw/main/";
+    String XIAOYA_BASE_URL = "https://raw.githubusercontent.com/xiaoyaliu00/data/main/";
     String DATA_DIR = "/opt/alist/data";
     String APP_INIT = "app_init";
     int APP_GROUP = 0;
