@@ -8,7 +8,7 @@ import org.alist.hub.bean.FileWatcher;
 import org.alist.hub.exception.ServiceException;
 import org.alist.hub.external.AListClient;
 import org.alist.hub.external.Aria2Client;
-import org.alist.hub.external.PushDeerClient;
+import org.alist.hub.external.BarkClient;
 import org.alist.hub.model.AppConfig;
 import org.alist.hub.service.AppConfigService;
 import org.alist.hub.service.FileWatcherService;
@@ -33,7 +33,7 @@ public class FileWatcherServiceImpl implements FileWatcherService {
     private static boolean isRunning = false;
     private final Aria2Client aria2Client;
     private final AppConfigService appConfigService;
-    private final PushDeerClient pushDeerClient;
+    private final BarkClient barkClient;
     private final AListClient aListClient;
 
     /**
@@ -122,9 +122,9 @@ public class FileWatcherServiceImpl implements FileWatcherService {
                     if (StringUtils.hasText(rawUrl)) {
                         aria2Client.add(rawUrl, fileWatcher.getFolderName() + "/" + file.getName());
                         waitForDownloadToComplete();
-                        pushDeerClient.ifPresent(notice -> {
+                        barkClient.ifPresent(notice -> {
                             if (notice.isTransfer()) {
-                                pushDeerClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s\t%s", fileWatcher.getFolderName(), file.getName()));
+                                barkClient.send(notice.getPushKey(), "转存文件成功", String.format("\n%s\t%s", fileWatcher.getFolderName(), file.getName()));
                             }
                         });
                     }

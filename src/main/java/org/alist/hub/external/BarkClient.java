@@ -18,16 +18,14 @@ import java.util.function.Consumer;
 @Component
 @AllArgsConstructor
 @Slf4j
-public class PushDeerClient {
+public class BarkClient {
     private final AppConfigService appConfigService;
 
     public void send(String pushKey, String title, String message) {
-        Payload payload = Payload.create("https://api2.pushdeer.com/message/push");
+        Payload payload = Payload.create("https://api.day.app/" + pushKey);
         payload.addHeader("Content-Type", "application/json");
-        payload.addParam("pushkey", pushKey);
-        payload.addParam("text", title);
-        payload.addParam("desp", message);
-        payload.addParam("type", "markdown");
+        payload.addBody("title", title);
+        payload.addBody("body", message);
         new Thread(() -> Http.post(payload)).start();//不因执行失败 影响主进程运行
     }
 

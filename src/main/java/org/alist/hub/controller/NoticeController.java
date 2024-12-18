@@ -6,6 +6,7 @@ import org.alist.hub.bean.ResultCode;
 import org.alist.hub.bo.NoticeBO;
 import org.alist.hub.dto.NoticeDTO;
 import org.alist.hub.exception.ServiceException;
+import org.alist.hub.external.BarkClient;
 import org.alist.hub.service.AppConfigService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import java.util.Optional;
 @RequestMapping("/notice")
 public class NoticeController {
     private final AppConfigService appConfigService;
+    private final BarkClient barkClient;
 
     @GetMapping
     public NoticeBO get() {
@@ -42,6 +44,7 @@ public class NoticeController {
         }
         noticeBO.setPushKey(notice.getPushKey());
         appConfigService.saveOrUpdate(noticeBO);
+        barkClient.send(notice.getPushKey(), "通知设置成功", "测试消息通道是否通畅");
     }
 
     @PutMapping
@@ -51,5 +54,6 @@ public class NoticeController {
             throw new ServiceException(ResultCode.NOT_FOUND);
         }
         appConfigService.saveOrUpdate(notice);
+        barkClient.send(notice.getPushKey(), "通知更新成功", "测试消息通道是否通畅");
     }
 }

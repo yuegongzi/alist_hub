@@ -10,7 +10,7 @@ import org.alist.hub.bo.AliYunOpenBO;
 import org.alist.hub.external.AListClient;
 import org.alist.hub.external.AliYunDriveClient;
 import org.alist.hub.external.AliYunOpenClient;
-import org.alist.hub.external.PushDeerClient;
+import org.alist.hub.external.BarkClient;
 import org.alist.hub.external.QuarkClient;
 import org.alist.hub.external.UCClient;
 import org.alist.hub.model.AppConfig;
@@ -36,7 +36,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class AListHubScheduler {
     private final AliYunDriveClient aliYunDriveClient;
-    private final PushDeerClient pushDeerClient;
+    private final BarkClient barkClient;
     private final AppConfigService appConfigService;
     private final AListService aListService;
     private final AliYunOpenClient aliYunOpenClient;
@@ -55,17 +55,17 @@ public class AListHubScheduler {
             JsonNode jsonNode = aliYunDriveClient.sign();
             aliYunDriveBO.setResult(jsonNode);
             appConfigService.saveOrUpdate(aliYunDriveBO);
-            pushDeerClient.ifPresent(notice -> {
+            barkClient.ifPresent(notice -> {
                 if (notice.isSign()) {
                     Integer signCount = jsonNode.findValue("signInCount").asInt(0);
-                    pushDeerClient.send(notice.getPushKey(), "阿里云盘签到成功", String.format("本月累计签到%s天", signCount));
+                    barkClient.send(notice.getPushKey(), "阿里云盘签到成功", String.format("本月累计签到%s天", signCount));
                 }
             });
         }
         String message = quarkClient.signInfo();
-        pushDeerClient.ifPresent(notice -> {
+        barkClient.ifPresent(notice -> {
             if (notice.isSign()) {
-                pushDeerClient.send(notice.getPushKey(), "夸克签到: ", message);
+                barkClient.send(notice.getPushKey(), "夸克签到: ", message);
             }
         });
     }
@@ -74,9 +74,9 @@ public class AListHubScheduler {
     public void update() {
         if (aListService.checkUpdate()) {
             aListService.update();
-            pushDeerClient.ifPresent(notice -> {
+            barkClient.ifPresent(notice -> {
                 if (notice.isUpdate()) {
-                    pushDeerClient.send(notice.getPushKey(), "小雅数据更新成功", String.format("更新时间: %s", DateTimeUtils.format(LocalDateTime.now())));
+                    barkClient.send(notice.getPushKey(), "小雅数据更新成功", String.format("更新时间: %s", DateTimeUtils.format(LocalDateTime.now())));
                 }
             });
         }
