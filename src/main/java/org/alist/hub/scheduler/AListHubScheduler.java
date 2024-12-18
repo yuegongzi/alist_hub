@@ -65,7 +65,7 @@ public class AListHubScheduler {
         String message = quarkClient.signInfo();
         barkClient.ifPresent(notice -> {
             if (notice.isSign()) {
-                barkClient.send(notice.getPushKey(), "夸克签到: ", message);
+                barkClient.send(notice.getPushKey(), "夸克签到成功", message);
             }
         });
     }
