@@ -45,6 +45,9 @@ public class AliYunOpenClient {
             throw new ServiceException("获取token失败");
         }
         AliYunOpenBO aliyunOpenBO = optional.get();
+        if (!StringUtils.hasText(aliyunOpenBO.getAccessToken())) {
+            throw new ServiceException("获取token失败");
+        }
         aliyunOpenBO.setExpiresIn(aliyunOpenBO.getExpiresIn() * 900 + System.currentTimeMillis());//少存一点时间
         // 保存或更新AliyunOpenBO对象到数据库
         appConfigService.saveOrUpdate(aliyunOpenBO);
