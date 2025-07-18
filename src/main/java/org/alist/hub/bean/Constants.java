@@ -8,7 +8,7 @@ public interface Constants {
     int APP_GROUP = 0;
     int ALIST_GROUP = 1;
     int WATCHER_GROUP = 2;
-    String API_DOMAIN = "https://api-cf.nn.ci";
+    String API_DOMAIN = "https://api.alistgo.com";
     String TV_BOX_TOKEN = "tv_box_token";
     String FILE_NAME = "alist_hub_temp";
     //定义一个很高的自定义ID 避免自己添加后的ID占用小雅的ID
